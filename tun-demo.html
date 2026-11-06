@@ -1126,7 +1126,7 @@ const VIEWS = { oversikt: vOversikt, enheter: vEnheter, utleie: vUtleie, dokumen
 function render() {
   renderSide();
   const [h, p] = HEAD[S.view];
-  $('top').innerHTML = `<div><h1>${h}</h1><p>${p}</p></div><div class="top-meta"><span class="badge">Eksempeldata, fiktivt borettslag</span><span class="badge">Demodato ${fd(iso(TODAY))}</span><a class="badge" href="tun-demo-sameie.html">Se sameieversjonen</a></div>`;
+  $('top').innerHTML = `<div><h1>${h}</h1><p>${p}</p></div><div class="top-meta"><span class="badge">Eksempeldata, fiktivt borettslag</span><span class="badge">Demodato ${fd(iso(TODAY))}</span><a class="badge" href="tun-oppstart.html">Se oppstarten</a><a class="badge" href="tun-demo-sameie.html">Se sameieversjonen</a></div>`;
   $('view').innerHTML = VIEWS[S.view]();
   document.title = `${h} · Tun styreportal`;
 }

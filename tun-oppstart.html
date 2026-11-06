@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tun oppstart</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: fast venstremeny med modulene, arbeidsflate med kort i rutenett. Årshjulet og fasadekartet er de to bildene som bærer identiteten. */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --surface-2:#E9EEED; --line:#D9E0DE; --line-2:#C2CDCA;
+  --ink:#14232A; --ink-2:#465A61; --muted:#6B7D84;
+  --accent:#1D6B64; --accent-ink:#FFFFFF; --accent-soft:#DCEDEA; --ochre:#B7862B;
+  --side-bg:#13262C; --side-ink:#DCE8E6; --side-muted:#8EA6A5; --side-hover:#1B333A; --side-active:#244650; --side-line:#24404A;
+  --good:#23794A; --good-soft:#DFF0E5; --warn:#94590A; --warn-soft:#F6EAD3; --crit:#B23A32; --crit-soft:#F7E0DD; --info:#2A5F8F; --info-soft:#DEE9F4;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --scrim:rgba(12,24,28,.38); --shadow:0 18px 48px rgba(12,30,36,.22);
+  --f-display:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1618; --surface:#152023; --surface-2:#1C2A2E; --line:#27373B; --line-2:#36494E;
+    --ink:#E3ECEA; --ink-2:#AFC0BE; --muted:#80959A;
+    --accent:#4DB3A7; --accent-ink:#06201D; --accent-soft:#16342F; --ochre:#D8A64A;
+    --side-bg:#0A1315; --side-ink:#D6E3E1; --side-muted:#7F9796; --side-hover:#13232A; --side-active:#1A353C; --side-line:#1A2B30;
+    --good:#5DC08A; --good-soft:#15301F; --warn:#E2A548; --warn-soft:#33260F; --crit:#EE7E73; --crit-soft:#3A1D1A; --info:#7DB2E8; --info-soft:#15283A;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --scrim:rgba(0,0,0,.55); --shadow:0 18px 48px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --surface:#152023; --surface-2:#1C2A2E; --line:#27373B; --line-2:#36494E;
+  --ink:#E3ECEA; --ink-2:#AFC0BE; --muted:#80959A;
+  --accent:#4DB3A7; --accent-ink:#06201D; --accent-soft:#16342F; --ochre:#D8A64A;
+  --side-bg:#0A1315; --side-ink:#D6E3E1; --side-muted:#7F9796; --side-hover:#13232A; --side-active:#1A353C; --side-line:#1A2B30;
+  --good:#5DC08A; --good-soft:#15301F; --warn:#E2A548; --warn-soft:#33260F; --crit:#EE7E73; --crit-soft:#3A1D1A; --info:#7DB2E8; --info-soft:#15283A;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --scrim:rgba(0,0,0,.55); --shadow:0 18px 48px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-size:.88em;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+
+/* Skall */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--side-bg);color:var(--side-ink);display:flex;flex-direction:column;gap:20px;padding:22px 14px 18px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1;letter-spacing:-.02em}
+.brand-sub{font-size:12px;color:var(--side-muted);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.entity{border:1px solid var(--side-line);border-radius:10px;padding:11px 12px;display:grid;gap:2px}
+.entity-name{font-weight:600}
+.entity-meta{font-size:12.5px;color:var(--side-muted)}
+.nav{display:grid;gap:2px}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;color:var(--side-ink);padding:9px 10px;border-radius:8px;text-align:left;font-size:15px}
+.nav-item svg{width:19px;height:19px;flex:none;opacity:.85}
+.nav-item:hover{background:var(--side-hover)}
+.nav-item.is-active{background:var(--side-active);font-weight:600}
+.nav-item.is-active svg{opacity:1;color:var(--ochre)}
+.nav-count{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;background:var(--ochre);color:#1a1405;border-radius:999px;padding:0 7px;font-weight:700;line-height:19px}
+.role{margin-top:auto;display:grid;gap:7px;padding:0 4px}
+.role-label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--side-muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--side-hover);border-radius:9px;padding:3px;gap:3px}
+.seg button{border:0;background:none;color:var(--side-ink);padding:7px 0;border-radius:7px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--side-ink);color:var(--side-bg);font-weight:600}
+
+.main{min-width:0}
+.wrap{max-width:1320px;margin:0 auto;padding-block:26px 40px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.top h1{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.top p{margin:5px 0 0;color:var(--ink-2)}
+.top-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border:1px dashed var(--line-2);color:var(--ink-2);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.foot{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+
+/* Byggesteiner */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:14px}
+.h2{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.h3{font-size:15px;font-weight:600}
+.sub{color:var(--ink-2);font-size:14px;margin:2px 0 0}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px}
+.grid-2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tiles.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:4px;text-align:left;min-width:0}
+button.tile:hover{border-color:var(--line-2)}
+.tile-k{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tile-v{font-family:var(--f-display);font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile-s{font-size:13.5px;color:var(--ink-2)}
+.tile.crit .tile-v{color:var(--crit)}
+.tile.warn .tile-v{color:var(--warn)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--ink-2)}
+.pill svg{width:12px;height:12px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.info{background:var(--info-soft);color:var(--info)}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 13px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn svg{width:16px;height:16px}
+.link{border:0;background:none;color:var(--accent);font-weight:600;padding:0;font-size:14px}
+.link:hover{text-decoration:underline}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600}
+.chip .n{opacity:.65;margin-left:4px;font-variant-numeric:tabular-nums}
+.search{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 11px;min-width:0;width:min(320px,100%)}
+select.search{width:auto}
+.search::placeholder{color:var(--muted)}
+
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px 16px;margin:0;font-size:14.5px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+
+/* Tabeller */
+.tbl{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+td.nowrap{white-space:nowrap}
+tr.sum td{font-weight:700;border-bottom:1px solid var(--line-2)}
+tr.head td{font-family:var(--f-display);font-weight:600;padding-top:16px;border-bottom:1px solid var(--line-2)}
+tr.total td{font-family:var(--f-display);font-weight:700;font-size:16px;border-bottom:0;padding-top:14px}
+.pos{color:var(--good)} .neg{color:var(--crit)}
+
+/* Oversikt */
+.actions{list-style:none;margin:0;padding:0;display:grid}
+.act{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.act:first-child{border-top:0;padding-top:2px}
+.act-t{font-weight:600}
+.act-s{grid-column:2;color:var(--ink-2);font-size:14px}
+.act .link{grid-row:1;grid-column:3;white-space:nowrap}
+.agenda{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:2px}
+.ag{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:start}
+.ag:first-child{border-top:0}
+.ag-d{font-family:var(--f-display);text-align:center;line-height:1.05;border-radius:8px;background:var(--surface-2);padding:6px 0}
+.ag-d b{display:block;font-size:19px}
+.ag-d span{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ag-t{font-weight:600}
+.ag-s{font-size:13.5px;color:var(--ink-2)}
+.dotc{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.c-frist{background:var(--s1);fill:var(--s1)} .c-mote{background:var(--s2);fill:var(--s2)} .c-kontroll{background:var(--s3);fill:var(--s3)}
+.mini-list{list-style:none;margin:0;padding:0;display:grid}
+.mini-list li{padding:10px 0;border-top:1px solid var(--line);display:grid;gap:3px}
+.mini-list li:first-child{border-top:0;padding-top:0}
+.mini-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.mini-title{font-weight:600}
+.mini-meta{font-size:13px;color:var(--muted)}
+.progress{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:10px 0 6px}
+.progress span{display:block;height:100%;background:var(--accent);border-radius:999px}
+.bigline{font-family:var(--f-display);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Fasadekart */
+.facades{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}
+.facade{display:grid;gap:0}
+.roof{height:12px;margin:0 -7px;background:var(--line-2);border-radius:4px 4px 0 0}
+.floors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-top:0}
+.win{position:relative;aspect-ratio:16/10;border-radius:5px;border:1px solid var(--line-2);background:var(--surface);font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);display:grid;place-items:center;padding:0}
+.win:hover{border-color:var(--ink)}
+.win-utleid{background:var(--s1);border-color:var(--s1);color:#fff}
+.win-korttid{background:var(--s2);border-color:var(--s2);color:#fff}
+.win-dot{position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:var(--crit);border:2px solid var(--surface-2)}
+.door-row{display:flex;justify-content:center;background:var(--surface-2);border:1px solid var(--line);border-top:0;padding-top:2px;border-radius:0 0 4px 4px}
+.door{width:34px;height:26px;border-radius:5px 5px 0 0;background:var(--line-2)}
+.facade-label{margin-top:8px;font-weight:600;font-size:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);align-items:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line-2)}
+.sw.round{border-radius:50%}
+
+/* Utleie */
+.req{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:12px}
+.req + .req{margin-top:12px}
+.req-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.req-actions{display:flex;flex-wrap:wrap;gap:8px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.meter-row{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 92px;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.meter-row:first-of-type{border-top:0}
+.meter{position:relative;height:14px;border-radius:0 4px 4px 0;background:var(--surface-2)}
+.meter-f{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--s2)}
+.meter-f.over{background:var(--crit)}
+.meter-lim{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink)}
+.meter-cap{font-size:12px;color:var(--muted);margin-top:4px}
+.rules{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:14.5px;display:grid;gap:8px}
+.rules p{margin:0}
+
+/* Dokumenter */
+.docs{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+.doclist{list-style:none;margin:0;padding:0}
+.doc{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 6px;border-top:1px solid var(--line);cursor:pointer;border-radius:6px}
+.doc:first-child{border-top:0}
+.doc:hover{background:var(--surface-2)}
+.doc svg{width:22px;height:22px;color:var(--accent)}
+.doc-t{font-weight:600;overflow-wrap:anywhere}
+.doc-m{font-size:13px;color:var(--muted)}
+.empty{padding:22px 4px;color:var(--muted)}
+.ask{position:sticky;top:20px;display:grid;gap:12px}
+.ask-head{display:flex;gap:10px;align-items:center}
+.ask-head svg{width:22px;height:22px;color:var(--ochre)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:13.5px;text-align:left}
+.sugg button:hover{border-color:var(--accent);color:var(--accent)}
+.log{display:grid;gap:12px;max-height:440px;overflow-y:auto}
+.q{justify-self:end;background:var(--ink);color:var(--surface);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:90%}
+.a{background:var(--surface-2);border-radius:12px 12px 12px 2px;padding:10px 12px;display:grid;gap:8px}
+.a p{margin:0}
+.srcs{display:flex;flex-wrap:wrap;gap:6px}
+.src{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:3px 8px;font-size:12.5px;color:var(--accent);font-weight:600;text-align:left}
+.ask form{display:flex;gap:8px}
+.ask input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 11px}
+.fine{font-size:12.5px;color:var(--muted);margin:0}
+
+/* Styret */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.person{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:8px;background:var(--surface)}
+.person-top{display:flex;gap:12px;align-items:center}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;background:var(--accent-soft);color:var(--accent);flex:none}
+.person-name{font-weight:700}
+.person-c{font-size:13.5px;color:var(--ink-2);display:grid;gap:2px}
+.person-c span{overflow-wrap:anywhere}
+.new-row td{background:var(--accent-soft)}
+
+/* Årshjul */
+.wheel-wrap{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:20px;align-items:start}
+.wheel{width:100%;height:auto;display:block;max-width:430px;margin:0 auto}
+.wseg{fill:var(--surface-2);stroke:none}
+.wseg.is-now{fill:var(--accent-soft)}
+.wlab{font:600 12.5px var(--f-body);fill:var(--ink-2);text-transform:uppercase;letter-spacing:.05em}
+.wneedle{stroke:var(--ochre);stroke-width:2;stroke-linecap:round}
+.wneedle-hub{fill:var(--ochre)}
+.wdot{stroke:var(--surface);stroke-width:2.5;cursor:pointer}
+.wdot.is-sel{stroke:var(--ink);stroke-width:3}
+.wc1{font:600 12px var(--f-body);fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.wc2{font:700 21px var(--f-display);fill:var(--ink)}
+.wc3{font:500 13px var(--f-body);fill:var(--ink-2)}
+.month-block + .month-block{margin-top:6px}
+.month-h{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 0 4px}
+.ev{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:8px 8px;border-radius:8px;align-items:start}
+.ev.is-sel{background:var(--accent-soft)}
+.ev-d{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:14px}
+.ev-t{font-weight:600}
+.ev-s{font-size:13.5px;color:var(--ink-2)}
+
+/* Regnskap */
+.hbars{display:grid;gap:7px}
+.hbar{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 78px;gap:10px;align-items:center;font-size:14px;border-radius:6px;padding:2px 0}
+.hbar:hover .hbar-f,.hbar:focus .hbar-f{filter:brightness(1.1)}
+.hbar-l{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-t{height:16px;position:relative}
+.hbar-f{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .baseline{stroke:var(--line-2);stroke-width:1}
+.chart .axis{font:500 12px var(--f-body);fill:var(--muted)}
+.chart .axis.strong{fill:var(--ink);font-weight:700}
+.chart .axis.small{font-size:11px}
+.chart .bar{cursor:pointer}
+.chart .bar.s1{fill:var(--s1)} .chart .bar.s2{fill:var(--s2)}
+.chart .bar.dim{opacity:.4}
+.chart .bar:hover{opacity:1}
+.yr-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* Min side */
+.pay-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pay{display:grid;gap:3px;justify-items:center;font-size:12px;color:var(--muted);min-width:42px}
+.pay i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--good-soft);color:var(--good);font-style:normal;font-weight:700}
+textarea{width:100%;min-height:96px;border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;background:var(--surface);resize:vertical}
+label.f{display:grid;gap:5px;font-weight:600;font-size:14px}
+.form{display:grid;gap:10px}
+
+/* Pliktsjekk, næringsseksjon, lenke mellom demoene */
+a.badge{text-decoration:none;color:var(--accent);border-style:solid;border-color:var(--accent);font-weight:600}
+a.badge:hover{background:var(--accent-soft)}
+.win-naering{background:repeating-linear-gradient(135deg,var(--surface) 0 5px,var(--surface-2) 5px 10px);border-style:dashed;color:var(--ink)}
+.plikter{display:grid}
+.plikt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
+.plikt:first-child{border-top:0;padding-top:0}
+.plikt-t{font-weight:600}
+.plikt-s{grid-column:1;font-size:13.5px;color:var(--ink-2)}
+.plikt .pill{grid-column:2;grid-row:1}
+
+/* Skuff, verktøytips, toast */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--surface);z-index:41;box-shadow:var(--shadow);overflow-y:auto;padding:22px max(22px,env(safe-area-inset-right,0px)) 30px 22px;padding-top:max(22px,env(safe-area-inset-top,0px));display:grid;gap:18px;align-content:start}
+.drawer-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.drawer h2{font-size:24px;letter-spacing:-.02em}
+.x{border:0;background:var(--surface-2);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;flex:none}
+.x svg{width:18px;height:18px}
+.dsec{display:grid;gap:9px;border-top:1px solid var(--line);padding-top:14px}
+.preview{border:1px solid var(--line);border-radius:8px;padding:22px 24px;display:grid;gap:9px;background:var(--bg)}
+.preview i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--surface);font-size:13px;padding:6px 9px;border-radius:7px;max-width:280px;box-shadow:var(--shadow)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:max(22px,env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:var(--surface);padding:11px 16px;border-radius:10px;box-shadow:var(--shadow);max-width:min(560px,calc(100% - 32px));font-size:14.5px}
+
+@media (max-width:1180px){
+  .docs{grid-template-columns:minmax(0,1fr)}
+  .ask{position:static}
+  .tiles.five{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1000px){
+  .grid-2,.grid-2e,.grid-3,.wheel-wrap{grid-template-columns:minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:14px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+  .entity{display:none}
+  .nav{order:3;width:100%;display:flex;overflow-x:auto;gap:4px;padding-bottom:2px}
+  .nav-item{width:auto;white-space:nowrap;padding:7px 10px}
+  .role{margin:0 0 0 auto;padding:0}
+  .role-label{display:none}
+  .seg button{padding:5px 12px}
+  .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 32px}
+  .top h1{font-size:25px}
+}
+@media (max-width:560px){
+  .tiles,.tiles.five{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tile{padding:12px}
+  .tile-v{font-size:19px}
+  .act{grid-template-columns:minmax(0,1fr) auto}
+  .act .pill{grid-column:1;grid-row:1;justify-self:start}
+  .act .link{grid-column:2;grid-row:1}
+  .act-t,.act-s{grid-column:1 / -1}
+  .meter-row{grid-template-columns:minmax(0,1fr) 80px}
+  .meter-row .meter-wrap{grid-column:1 / -1;grid-row:2}
+  .hbar{grid-template-columns:minmax(0,1fr) 70px}
+  .hbar-t{grid-column:1 / -1;grid-row:2}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .drawer{animation:slide .22s ease-out}
+  @keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
+}
+</style>
+<style>
+/* Oppstart: én kolonne, fire steg i rekkefølge. Arbeidsflaten er den samme som i demoen. */
+.ob-top{background:var(--side-bg);color:var(--side-ink)}
+.ob-top-in{max-width:980px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.ob-top .brand{padding:0}
+.ob-wrap{max-width:980px;margin:0 auto;padding-block:30px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:22px}
+.ob-head h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+.ob-lede{font-size:18px;color:var(--ink-2);max-width:640px;margin:10px 0 0}
+.stepper{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stepper button{width:100%;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;text-align:left;font-size:14.5px;color:var(--ink-2);min-width:0}
+.stepper button:disabled{cursor:default;opacity:.55}
+.st-n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-family:var(--f-display);font-weight:700;flex:none}
+.st-n svg{width:15px;height:15px}
+.st-l{min-width:0}
+.st-l b{display:block;font-weight:600;color:var(--ink)}
+.st-l small{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.is-cur button{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.is-cur .st-n{background:var(--accent);color:var(--accent-ink)}
+.is-done .st-n{background:var(--good-soft);color:var(--good)}
+.lookup{display:flex;gap:8px;flex-wrap:wrap}
+.lookup input{flex:1 1 260px;min-width:0;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;font-size:16px;background:var(--surface)}
+.hits{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.hits button{width:100%;display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;text-align:left}
+.hits button:hover{border-color:var(--accent)}
+.err{background:var(--crit-soft);color:var(--crit);border-radius:8px;padding:10px 12px;font-size:14.5px}
+.src-line{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.src-line svg{width:14px;height:14px;color:var(--good)}
+.board-mini{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.board-mini li{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:6px}
+.board-mini li:first-child{border-top:0;padding-top:0}
+.counts{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+.counts label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.counts input{width:130px;border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:16px;background:var(--surface)}
+.warnbox{display:grid;gap:6px;margin-top:12px}
+.drop{border:2px dashed var(--line-2);border-radius:12px;padding:26px 20px;text-align:center;display:grid;gap:8px;justify-items:center;background:var(--surface)}
+.drop.is-over{border-color:var(--accent);background:var(--accent-soft)}
+.drop svg{width:30px;height:30px;color:var(--accent)}
+.drop p{margin:0}
+.or-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.map{display:flex;flex-wrap:wrap;gap:6px}
+.map span{font-size:13px;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.map b{font-weight:600;color:var(--accent)}
+.flag{font-size:12.5px;font-weight:600;color:var(--warn)}
+.flag.info{color:var(--info)}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cat{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;align-content:start;background:var(--surface);min-width:0}
+.cat.sjekk{border-color:var(--warn)}
+.cat-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.cat-h span:last-child{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
+.files{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13.5px}
+.files li{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--ink-2);min-width:0}
+.files .fn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.files .yr{font-variant-numeric:tabular-nums;color:var(--muted);flex:none}
+.files select{font-size:13px;border:1px solid var(--line-2);border-radius:6px;padding:2px 4px;background:var(--surface);max-width:150px}
+.more{font-size:12.5px;color:var(--muted)}
+.found{list-style:none;margin:0;padding:0;display:grid}
+.found li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;padding:11px 0;border-top:1px solid var(--line)}
+.found li:first-child{border-top:0;padding-top:0}
+.found input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent)}
+.found .fs{grid-column:2;font-size:13px;color:var(--muted)}
+.todo{list-style:none;margin:0;padding:0;display:grid}
+.todo li{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 0;border-top:1px solid var(--line)}
+.todo li:first-child{border-top:0;padding-top:0}
+.sorting{display:grid;gap:8px;padding:8px 0}
+.sorting .progress{margin:0}
+.privacy{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:760px){.stepper{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+</head>
+<body>
+<div class="ob-top"><div class="ob-top-in">
+  <div class="brand" id="brand"></div>
+  <a class="badge" href="tun-demo.html">Til demoen</a>
+</div></div>
+<main class="ob-wrap">
+  <header class="ob-head">
+    <div class="eyebrow">Oppstart</div>
+    <h1>Kom i gang på en kveld</h1>
+    <p class="ob-lede">Fire steg fra organisasjonsnummer til ferdig arkiv. Prøv med deres eget borettslag eller sameie, eller bruk eksempelet.</p>
+  </header>
+  <ol class="stepper" id="stepper" aria-label="Steg"></ol>
+  <section id="step" style="display:grid;gap:20px"></section>
+  <p class="privacy">Ingenting lagres, og ingenting lastes opp. Oppslaget i Brønnøysund går rett fra nettleseren din til det åpne registeret, og filene du velger leses bare her på maskinen din. Navn og tall i eksempelet er oppdiktet.</p>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ---------- Verktøy ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const nf = n => Math.round(n).toLocaleString('nb-NO');
+const fdate = s => { if (!s) return ''; const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' }); };
+const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const T0 = Date.now();
+const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  check: I('<path d="m5 12.5 4.2 4L19 7"/>'),
+  alert: I('<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 17h.01"/>'),
+  info: I('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'),
+  upload: I('<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>'),
+  folder: I('<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/>'),
+  search: I('<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>'),
+  send: I('<path d="M4 12 20 4l-5 16-3.5-6.5z"/><path d="m11.5 13.5 3-3"/>')
+};
+const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="4" width="24" height="6" rx="1.6" fill="#DCE8E6"/><rect x="4" y="12" width="6" height="16" rx="1.6" fill="#DCE8E6"/><rect x="22" y="12" width="6" height="16" rx="1.6" fill="#DCE8E6"/><circle cx="16" cy="21" r="3.6" fill="#C9973A"/></svg>`;
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4200); }
+const KEEP = new Set(['AS', 'ASA', 'NUF', 'KS', 'BBL', 'BRL', 'ESEK', 'SA', 'ANS', 'DA', 'OBOS', 'USBL', 'BOB', 'TOBB', 'KPMG', 'PWC', 'EY', 'BDO']);
+const LOWER = new Set(['borettslag', 'sameie', 'sameiet', 'eierseksjonssameie', 'eierseksjonssameiet', 'boligsameie', 'boligsameiet', 'og', 'i', 'på', 'av']);
+function nice(s) {
+  if (!s) return '';
+  if (s !== s.toUpperCase()) return s;
+  return s.split(/(\s+|-)/).map((w, i) => { if (/^\s+$|^-$/.test(w)) return w; if (KEEP.has(w)) return w; const l = w.toLowerCase(); if (i > 0 && LOWER.has(l)) return l; return l.charAt(0).toUpperCase() + l.slice(1); }).join('');
+}
+
+/* ---------- Eksempelet (oppdiktet) ---------- */
+const EX_ORG = {
+  orgnr: '999999999', navn: 'Kløverhagen borettslag', form: 'BRL', formNavn: 'Borettslag', adresse: 'Kløverveien 2, Oslo', stiftet: '1987-03-12', fr: true, sisteRegnskap: '2025',
+  ffor: null, regn: 'Eksempel Regnskap AS', revisor: 'Eksempel Revisjon AS', example: true,
+  styret: [['Ingrid Haugland', 'Styreleder'], ['Morten Aas', 'Nestleder'], ['Sara Lindqvist', 'Styremedlem'], ['Jonas Berg', 'Styremedlem'], ['Amira Hassan', 'Varamedlem']]
+};
+const NAMES = ['Per Ivar Solheim', 'Tobias Engen', 'Nora Sæther', 'Erik Fosse', 'Linnea Dahl', 'Kristoffer Moe', 'Marte Rønning', 'Hanne Myrvold', 'Ali Rahimi', 'Silje Holm', 'Morten Aas', 'Henrik Strand',
+  'Ida Vik', 'Magnus Lie', 'Thea Nyhus', 'Sara Lindqvist', 'Anders Kvam', 'Emilie Brekke', 'Sindre Tangen', 'Maja Wold', 'Ole Andreas Lunde', 'Julie Hovland', 'Mats Ødegård', 'Jonas Berg',
+  'Karoline Bakke', 'Fredrik Nilsen', 'Amira Hassan', 'Tiril Sandvik', 'Daniel Kowalski', 'Ragnhild Fjeld', 'Ingrid Haugland', 'Even Grønli', 'Sofie Aamodt', 'Lukas Bjerke', 'Vilde Tveit', 'Petter Hagen'];
+const slug = n => n.toLowerCase().replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'aa').replace(/[^a-z ]/g, '').trim().split(/\s+/).join('.');
+function exampleRows() {
+  const rows = [['Leil.nr', 'Andelseier', 'E-post', 'Mobil', 'Kvm']];
+  let i = 0;
+  for (const o of ['A', 'B', 'C']) for (let f = 1; f <= 4; f++) for (let n = 1; n <= 3; n++) {
+    const size = (f === 1 ? [52, 74, 88] : [56, 74, 88])[n - 1];
+    let enhet = `${o}-H0${f}0${n}`, epost = slug(NAMES[i]) + '@epost.example';
+    if (i === 3) enhet = '2. etg. venstre';
+    if (i === 11 || i === 27) epost = '';
+    if (i === 20) epost = 'ole.andreas.lunde(at)epost.example';
+    rows.push([enhet, NAMES[i], epost, `9•• •• ${String((i * 37) % 900 + 100)}`, size]);
+    if (i === 30) rows.push([enhet, 'Pål Haugland', 'pal.haugland@epost.example', '9•• •• 488', size]);
+    i++;
+  }
+  return rows;
+}
+const EX_FILES = ['Vedtekter Kløverhagen 2023.pdf', 'husordensregler_rev2024.pdf', 'Regler fellesrommet.pdf', 'Parkeringsregler 2026.pdf', 'Velkomstbrev nye beboere.docx',
+  'Protokoll GF 2026 signert.pdf', 'Protokoll GF 2026 signert (1).pdf', 'Innkalling GF 2026.pdf', 'Protokoll generalforsamling 2025.pdf', 'Ekstraordinær GF okt 2025 lading.pdf',
+  'Styremøte 7-2026.docx', 'styremote 6 2026.pdf', 'Styremøte 5-2026.pdf', 'Referat styremøte mars 2026.docx', 'Styremøte 9-2025.pdf',
+  'Avtale snøbrøyting 2026-27.pdf', 'Vaktmesteravtale 2024.pdf', 'Kontrakt TV og bredbånd 2023.pdf', 'Avtale ladeanlegg signert 2026.pdf',
+  'Forsikringsbevis 2026.pdf', 'Skademelding lekkasje B-H0202.pdf',
+  'Årsregnskap 2025 signert.pdf', 'Årsregnskap 2024.pdf', 'Budsjett 2026 v3.xlsx', 'Budsjett 2027 utkast.xlsx', 'Revisjonsberetning 2025.pdf', 'Lånedokumenter fellesgjeld 2019.pdf', 'Tredjepartsopplysninger 2025 kvittering.pdf', 'Faktura maling oppgang 2025.pdf',
+  'Tilstandsrapport 2025.pdf', 'Vedlikeholdsplan 2025-2035.xlsx', 'FDV balkonger 2024.pdf', 'Tegninger fasade 1987 skannet.pdf', 'Energiattest 2021.pdf',
+  'Internkontroll brann HMS 2025.pdf', 'Brannvesenet tilsyn 2024.pdf', 'Lekeplasskontroll mai 2026.pdf',
+  'Godkjent utleie A-H0201.pdf', 'Utleiesøknad C-H0102.pdf', 'Godkjenning fremleie B-H0303.pdf',
+  'Dugnadsliste vår 2026.xlsx', 'Brev fra kommunen eiendomsskatt 2026.pdf', 'E-post fra beboer om støy.msg',
+  'IMG_2034.jpg', 'Skann0007.pdf', 'Dokument1.docx'];
+const FOUND = [
+  { t: 'Forsikringen fornyes 1. januar 2027', a: 'Påminnelse 1. desember: be om tilbud før fornyelsen', f: 'Forsikringsbevis 2026.pdf' },
+  { t: 'Avtalen om snøbrøyting løper ut 30. april 2027', a: 'Påminnelse 1. mars: forleng eller hent nye tilbud', f: 'Avtale snøbrøyting 2026-27.pdf' },
+  { t: 'Generalforsamlingen valgte styreleder for to år i 2026', a: 'Styreleder er på valg på generalforsamlingen i 2028', f: 'Protokoll GF 2026 signert.pdf' },
+  { t: 'Lekeplassen ble kontrollert 5. mai 2026', a: 'Neste årlige kontroll i mai 2027', f: 'Lekeplasskontroll mai 2026.pdf' },
+  { t: 'Vinduene bør skiftes i 2029, anslått til 2,4 millioner kroner', a: 'Legges inn i vedlikeholdsplanen og budsjettet for 2028', f: 'Tilstandsrapport 2025.pdf' },
+  { t: 'Utleie av hele boligen krever styrets godkjenning', a: 'Spør arkivet kan svare beboerne om dette, med kilde', f: 'Vedtekter Kløverhagen 2023.pdf' }
+];
+
+/* ---------- Sortering av dokumenter etter filnavn ---------- */
+const CATS = { regler: 'Vedtekter og regler', gf: 'Generalforsamling og årsmøte', styre: 'Styremøter', avtaler: 'Avtaler', forsikring: 'Forsikring', okonomi: 'Økonomi', fdv: 'FDV og vedlikehold', hms: 'Brannvern og HMS', utleie: 'Utleie', korr: 'Korrespondanse', beboere: 'Dugnad og beboere', sjekk: 'Må sjekkes' };
+const RULESET = [
+  ['utleie', /utleie|fremleie|leietaker/], ['gf', /\bgf\b|generalforsamling|årsmøte|arsmote|innkalling/], ['styre', /styremøte|styremote|referat styre/], ['regler', /vedtekt|husorden|regler|velkomst/],
+  ['forsikring', /forsikring|skademelding/], ['okonomi', /årsregnskap|arsregnskap|regnskap|budsjett|revisjon|lån|laan|tredjeparts|faktura|eiendomsskatt|skatt/], ['avtaler', /avtale|kontrakt/],
+  ['fdv', /tilstand|vedlikehold|fdv|tegning|energiattest/], ['hms', /brann|hms|internkontroll|lekeplass/], ['korr', /brev|e-?post|\.msg$|\.eml$|nabovarsel/], ['beboere', /dugnad|beboer|nabo/]
+];
+function classify(name) { const l = name.toLowerCase(); for (const [c, re] of RULESET) if (re.test(l)) return c; return 'sjekk'; }
+function yearOf(name) { const m = name.match(/(?:^|\D)((?:19|20)\d{2})(?!\d)/); return m ? m[1] : ''; }
+const baseName = n => n.toLowerCase().replace(/\s*\(\d+\)(?=\.[^.]+$)/, '');
+
+/* ---------- Plikter ---------- */
+function plikter() {
+  const o = S.org; if (!o) return [];
+  if (o.form === 'BRL') return [
+    { t: 'Ordinær generalforsamling innen utgangen av juni', s: 'Gjelder alle borettslag', on: true },
+    { t: 'Registrering i Foretaksregisteret', s: 'Gjelder alle borettslag', on: true, avvik: !o.fr && 'Står ikke i Foretaksregisteret' },
+    { t: 'Tredjepartsopplysninger til Skatteetaten innen 31. januar', s: 'Gjelder alle borettslag', on: true },
+    { t: 'Årsregnskap til Regnskapsregisteret innen 31. juli', s: o.sisteRegnskap ? `Gjelder alle borettslag. Siste levert: ${o.sisteRegnskap}.` : 'Gjelder alle borettslag', on: true, avvik: !o.sisteRegnskap && 'Ingen årsregnskap registrert' },
+    { t: 'Revisor', s: o.revisor ? `Gjelder alle borettslag. Registrert: ${o.revisor}.` : 'Gjelder alle borettslag', on: true, onLabel: 'Påkrevd', avvik: !o.revisor && 'Ingen revisor registrert' },
+    { t: 'Svar på søknad om utleie', s: 'Ellers regnes leietakeren som godkjent', val: 'Innen én måned' },
+    { t: 'Korttidsutleie uten godkjenning', s: 'Når andelseieren selv bor i boligen', val: '30 døgn i året' }
+  ];
+  const N = S.counts.seksjoner, B = S.counts.bolig ?? N;
+  const known = N != null;
+  return [
+    { t: 'Ordinært årsmøte innen utgangen av juni', s: 'Gjelder alle eierseksjonssameier', on: true },
+    { t: 'Registrering i Foretaksregisteret', s: known ? `Plikt fra 9 seksjoner. Dere har ${N}.` : 'Plikt fra 9 seksjoner', on: known ? N >= 9 : null, avvik: known && N >= 9 && !o.fr && 'Står ikke i Foretaksregisteret' },
+    { t: 'Tredjepartsopplysninger til Skatteetaten innen 31. januar', s: known ? `Plikt med mer enn 8 boligseksjoner. Dere har ${B}.` : 'Plikt med mer enn 8 boligseksjoner', on: known ? B > 8 : null },
+    { t: 'Årsregnskap til Regnskapsregisteret innen 31. juli', s: known ? `Plikt fra 21 seksjoner. Dere har ${N}.${o.sisteRegnskap ? ` Siste levert: ${o.sisteRegnskap}.` : ''}` : 'Plikt fra 21 seksjoner', on: known ? N >= 21 : null, avvik: known && N >= 21 && !o.sisteRegnskap && 'Ingen årsregnskap registrert' },
+    { t: 'Revisor', s: 'Påkrevd fra 21 seksjoner. Årsmøtet kan likevel velge revisor.', on: known ? N >= 21 : null, onLabel: 'Påkrevd', offLabel: 'Ikke påkrevd', avvik: known && N >= 21 && !o.revisor && 'Ingen revisor registrert' },
+    { t: 'Grense for korttidsutleie', s: 'Vedtektene kan sette grensen til mellom 60 og 120 døgn', val: '90 døgn i året' }
+  ];
+}
+function pliktCard() {
+  const P = plikter();
+  const avvik = P.filter(p => p.avvik);
+  return `<section class="card"><div class="card-head"><div><h2 class="h2">Pliktene som gjelder dere</h2><p class="sub">${S.org.form === 'BRL' ? 'Lest ut fra organisasjonsformen og det som står i Brønnøysund.' : 'Lest ut fra antall seksjoner. Fyll inn tallene over, så oppdateres listen.'}</p></div></div>
+  <div class="plikter">${P.map(p => `<div class="plikt"><span class="plikt-t">${p.t}</span>${p.val ? `<span class="pill info">${p.val}</span>` : p.on === null ? '<span class="pill">Oppgi antall</span>' : p.on ? `<span class="pill good">${ICON.check}${p.onLabel || 'Gjelder'}</span>` : `<span class="pill">${p.offLabel || 'Gjelder ikke'}</span>`}<span class="plikt-s">${esc(p.s)}</span>${p.avvik ? `<span class="plikt-s"><span class="pill crit">${ICON.alert}${p.avvik}</span></span>` : ''}</div>`).join('')}</div>
+  ${avvik.length ? `<p class="fine" style="margin-top:12px">${avvik.length === 1 ? 'Ett punkt' : avvik.length + ' punkter'} bør sjekkes. Tun legger dem øverst på styrets oversikt.</p>` : ''}</section>`;
+}
+
+/* ---------- Tilstand ---------- */
+const S = { step: 1, max: 1, q: '', hits: [], busy: false, err: '', org: null, counts: { seksjoner: null, bolig: null }, rows: null, rowSource: '', docs: null, docSource: '', sorting: false, found: FOUND.map(() => true), invited: {} };
+const STEPS = [['Finn laget', 'Organisasjonsnummer'], ['Beboere', 'Excel eller CSV'], ['Arkivet', 'Dra inn dokumentene'], ['Ferdig', 'Klart for styret']];
+
+/* ---------- Brønnøysund ---------- */
+const API = 'https://data.brreg.no/enhetsregisteret/api';
+async function search(q) {
+  const digits = q.replace(/\s/g, '');
+  S.err = ''; S.hits = [];
+  if (/^\d{9}$/.test(digits)) return pick(digits);
+  if (q.trim().length < 3) { S.err = 'Skriv organisasjonsnummeret (ni sifre) eller minst tre bokstaver av navnet.'; return render(); }
+  S.busy = true; render();
+  try {
+    const r = await fetch(`${API}/enheter?navn=${encodeURIComponent(q.trim())}&organisasjonsform=BRL,ESEK&size=8`);
+    const j = await r.json();
+    S.hits = (j._embedded?.enheter || []).map(e => ({ orgnr: e.organisasjonsnummer, navn: nice(e.navn), form: e.organisasjonsform.kode, sted: nice(e.forretningsadresse?.poststed || '') }));
+    if (!S.hits.length) S.err = `Fant ingen borettslag eller sameier med «${q.trim()}» i navnet.`;
+  } catch (e) { S.err = 'Fikk ikke kontakt med Brønnøysundregistrene. Sjekk nettet, eller bruk eksempelet.'; }
+  S.busy = false; render();
+}
+async function pick(orgnr) {
+  S.busy = true; S.err = ''; S.hits = []; render();
+  try {
+    const r = await fetch(`${API}/enheter/${orgnr}`);
+    if (r.status === 404 || r.status === 410) throw new Error('notfound');
+    if (!r.ok) throw new Error('net');
+    const e = await r.json();
+    if (!['BRL', 'ESEK'].includes(e.organisasjonsform?.kode)) { S.err = `${nice(e.navn)} er registrert som ${(e.organisasjonsform?.beskrivelse || 'noe annet').toLowerCase()}. Tun er laget for borettslag og sameier.`; S.busy = false; return render(); }
+    let roller = { rollegrupper: [] };
+    try { const rr = await fetch(`${API}/enheter/${orgnr}/roller`); if (rr.ok) roller = await rr.json(); } catch (x) { }
+    const all = roller.rollegrupper.flatMap(g => g.roller.map(x => ({ g: g.type.kode, r: x }))).filter(x => !x.r.fratraadt && !x.r.avregistrert);
+    const enhet = k => { const x = all.find(y => y.g === k && y.r.enhet); return x ? nice(x.r.enhet.navn.join(' ')) : null; };
+    const RN = { LEDE: 'Styreleder', NEST: 'Nestleder', MEDL: 'Styremedlem', VARA: 'Varamedlem' };
+    const ORDER = { LEDE: 0, NEST: 1, MEDL: 2, VARA: 3 };
+    const styret = all.filter(x => x.g === 'STYR' && x.r.person).sort((a, b) => (ORDER[a.r.type.kode] ?? 9) - (ORDER[b.r.type.kode] ?? 9))
+      .map(x => { const n = x.r.person.navn; return [[n.fornavn, n.mellomnavn, n.etternavn].filter(Boolean).join(' '), RN[x.r.type.kode] || x.r.type.beskrivelse]; });
+    const a = e.forretningsadresse || e.postadresse || {};
+    S.org = {
+      orgnr, navn: nice(e.navn), form: e.organisasjonsform.kode, formNavn: e.organisasjonsform.kode === 'BRL' ? 'Borettslag' : 'Eierseksjonssameie',
+      adresse: [...(a.adresse || []), [a.postnummer, nice(a.poststed || '')].filter(Boolean).join(' ')].filter(Boolean).join(', '),
+      stiftet: e.stiftelsesdato, fr: !!e.registrertIForetaksregisteret, sisteRegnskap: e.sisteInnsendteAarsregnskap || null,
+      ffor: enhet('FFØR'), regn: enhet('REGN'), revisor: enhet('REVI'), styret, example: false, hentet: new Date()
+    };
+    S.counts = { seksjoner: null, bolig: null };
+  } catch (x) {
+    S.err = x.message === 'notfound' ? `Fant ikke organisasjonsnummeret ${orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')} i Enhetsregisteret.` : 'Fikk ikke kontakt med Brønnøysundregistrene. Sjekk nettet, eller bruk eksempelet.';
+  }
+  S.busy = false; render();
+}
+function useExample() { S.org = { ...EX_ORG }; S.counts = { seksjoner: 36, bolig: 36 }; S.err = ''; S.hits = []; render(); }
+
+/* ---------- Beboerlisten ---------- */
+const FIELDS = [['epost', /e-?post|mail/i], ['tlf', /tlf|telefon|mobil/i], ['areal', /kvm|m2|m²|areal|bra\b/i], ['navn', /navn|eier|beboer/i], ['enhet', /leil|enhet|bolig|seksj|snr|andel|nr/i]];
+const FNAME = { enhet: 'Enhet', navn: 'Navn', epost: 'E-post', tlf: 'Telefon', areal: 'Areal' };
+function analyse(rows) {
+  const head = rows[0].map(h => String(h ?? '').trim());
+  const map = {};
+  head.forEach((h, i) => { for (const [f, re] of FIELDS) if (!(f in map) && re.test(h)) { map[f] = i; break; } });
+  const body = rows.slice(1).filter(r => r.some(c => String(c ?? '').trim() !== ''));
+  const val = (r, f) => f in map ? String(r[map[f]] ?? '').trim() : '';
+  const seen = {};
+  const out = body.map(r => {
+    const enhet = val(r, 'enhet'), navn = val(r, 'navn'), epost = val(r, 'epost');
+    const flags = [];
+    const ok = /h0\d0\d/i.test(enhet) || /^\d{1,4}$/.test(enhet);
+    if (!enhet) flags.push(['Mangler enhet', '']); else if (!ok) flags.push(['Enheten må sjekkes', '']);
+    if (!epost) flags.push(['Mangler e-post', '']); else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(epost)) flags.push(['Ugyldig e-post', '']);
+    if (enhet && seen[enhet.toLowerCase()]) flags.push(['Medeier på samme enhet', 'info']);
+    seen[enhet.toLowerCase()] = true;
+    return { enhet, navn, epost, tlf: val(r, 'tlf'), areal: val(r, 'areal'), flags };
+  });
+  const enheter = new Set(out.filter(r => r.enhet).map(r => r.enhet.toLowerCase())).size;
+  return { head, map, rows: out, enheter, mangler: out.filter(r => r.flags.some(f => f[0] === 'Mangler e-post' || f[0] === 'Ugyldig e-post')).length, sjekk: out.filter(r => r.flags.some(f => f[0].startsWith('Enheten') || f[0] === 'Mangler enhet')).length, med: out.filter(r => r.flags.some(f => f[1] === 'info')).length };
+}
+function parseCSV(text) {
+  const first = text.split(/\r?\n/)[0] || '';
+  const d = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  return text.split(/\r?\n/).filter(l => l.trim()).map(l => { const out = []; let cur = '', q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === d && !q) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out; });
+}
+async function readRows(file) {
+  const name = file.name.toLowerCase();
+  try {
+    if (/\.(xlsx|xls|ods)$/.test(name)) {
+      if (!window.XLSX) throw new Error('Excel-leseren lastet ikke. Lagre filen som CSV og prøv igjen.');
+      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' });
+      setRows(rows, file.name);
+    } else if (/\.(csv|txt)$/.test(name)) setRows(parseCSV(await file.text()), file.name);
+    else throw new Error('Velg en Excel- eller CSV-fil.');
+  } catch (e) { S.rowErr = e.message || 'Klarte ikke å lese filen.'; render(); }
+}
+function setRows(rows, src) {
+  S.rowErr = '';
+  if (!rows || rows.length < 2) { S.rowErr = 'Fant ingen rader i filen.'; return render(); }
+  S.rows = analyse(rows); S.rowSource = src; render();
+}
+
+/* ---------- Arkivet ---------- */
+function setDocs(list, src) {
+  const seen = {};
+  const docs = list.map(f => { const b = baseName(f.name); const dup = !!seen[b]; seen[b] = true; return { name: f.name, size: f.size || 0, cat: classify(f.name), yr: yearOf(f.name), dup }; });
+  S.docs = docs; S.docSource = src; S.sorting = true; render();
+  setTimeout(() => { S.sorting = false; render(); }, reduced ? 0 : 1400);
+}
+
+/* ---------- Visninger ---------- */
+function vStepper() {
+  return STEPS.map(([t, s], i) => { const n = i + 1, cur = n === S.step, done = n < S.step || (n <= S.max && !cur && n < S.max); return `<li class="${cur ? 'is-cur' : ''} ${done ? 'is-done' : ''}"><button data-go="${n}" ${n > S.max ? 'disabled' : ''} ${cur ? 'aria-current="step"' : ''}><span class="st-n">${done ? ICON.check : n}</span><span class="st-l"><b>${t}</b><small>${s}</small></span></button></li>`; }).join('');
+}
+function v1() {
+  const o = S.org;
+  let html = `<section class="card">
+    <div class="card-head"><div><h2 class="h2">Finn borettslaget eller sameiet</h2><p class="sub">Skriv organisasjonsnummeret eller navnet. Tun henter resten fra Brønnøysundregistrene.</p></div></div>
+    <form class="lookup" id="lookForm"><input id="q" value="${esc(S.q)}" placeholder="For eksempel 999 999 999 eller Kløvertoppen" aria-label="Organisasjonsnummer eller navn" autocomplete="off"><button class="btn primary" type="submit">${ICON.search}${S.busy ? 'Henter...' : 'Hent fra Brønnøysund'}</button><button class="btn" type="button" data-act="example">Bruk eksempelet</button></form>
+    ${S.err ? `<p class="err" style="margin-top:12px">${esc(S.err)}</p>` : ''}
+    ${S.hits.length ? `<ul class="hits">${S.hits.map(h => `<li><button data-pick="${h.orgnr}"><span><b>${esc(h.navn)}</b> <span class="muted">${h.form === 'BRL' ? 'borettslag' : 'sameie'}${h.sted ? ', ' + esc(h.sted) : ''}</span></span><span class="mono muted">${h.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</span></button></li>`).join('')}</ul>` : ''}
+  </section>`;
+  if (o) {
+    html += `<div class="grid-2e">
+      <section class="card">
+        <div class="card-head"><div><div class="eyebrow">${o.formNavn}</div><h2 class="h2" style="font-size:22px;margin-top:2px">${esc(o.navn)}</h2></div>${o.example ? '<span class="pill">Eksempel</span>' : '<span class="pill good">' + ICON.check + 'Funnet</span>'}</div>
+        <dl class="kv">
+          <dt>Org.nr.</dt><dd class="mono">${o.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</dd>
+          <dt>Adresse</dt><dd>${esc(o.adresse || 'Ikke registrert')}</dd>
+          ${o.stiftet ? `<dt>Stiftet</dt><dd>${fdate(o.stiftet)}</dd>` : ''}
+          <dt>Foretaksregisteret</dt><dd>${o.fr ? 'Registrert' : 'Ikke registrert'}</dd>
+          <dt>Siste årsregnskap</dt><dd>${o.sisteRegnskap ? 'Levert for ' + o.sisteRegnskap : 'Ingen levert'}</dd>
+          <dt>Forretningsfører</dt><dd>${esc(o.ffor || 'Ingen registrert')}</dd>
+          <dt>Regnskapsfører</dt><dd>${esc(o.regn || 'Ingen registrert')}</dd>
+          <dt>Revisor</dt><dd>${esc(o.revisor || 'Ingen registrert')}</dd>
+        </dl>
+        <div class="dsec" style="margin-top:14px"><h3 class="h3">Styret</h3>${o.styret.length ? `<ul class="board-mini">${o.styret.map(([n, r]) => `<li><span>${esc(n)}</span><span class="muted">${esc(r)}</span></li>`).join('')}</ul>` : '<p class="sub">Ingen styremedlemmer registrert.</p>'}</div>
+        <p class="src-line" style="margin-top:12px">${ICON.check}${o.example ? 'Oppdiktet eksempel. Med et ekte organisasjonsnummer hentes dette fra Brønnøysund.' : 'Hentet fra Enhetsregisteret og Foretaksregisteret kl. ' + o.hentet.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' }) + '.'}</p>
+        ${o.ffor ? `<p class="fine" style="margin-top:8px">${esc(o.navn)} har forretningsfører. Tun kan brukes som styrets arkiv og årshjul ved siden av den.</p>` : ''}
+      </section>
+      <div style="display:grid;gap:20px;align-content:start">
+        <section class="card">
+          <div class="card-head"><div><h2 class="h2">Størrelse</h2><p class="sub">Brønnøysund vet ikke hvor mange boliger dere har. ${o.form === 'ESEK' ? 'For sameier styrer antallet hvilke plikter som gjelder.' : ''}</p></div></div>
+          <div class="counts">
+            <label for="nSeks">${o.form === 'BRL' ? 'Antall andeler' : 'Antall seksjoner'}<input id="nSeks" type="number" min="1" max="2000" inputmode="numeric" value="${S.counts.seksjoner ?? ''}"></label>
+            ${o.form === 'ESEK' ? `<label for="nBolig">Herav boliger<input id="nBolig" type="number" min="0" max="2000" inputmode="numeric" value="${S.counts.bolig ?? ''}"></label>` : ''}
+          </div>
+          ${o.form === 'ESEK' && o.sisteRegnskap && S.counts.seksjoner == null ? `<p class="fine" style="margin-top:10px">Sameiet leverer årsregnskap, så det har trolig 21 seksjoner eller flere.</p>` : ''}
+        </section>
+        <div id="pliktSlot">${pliktCard()}</div>
+      </div>
+    </div>`;
+  }
+  html += `<div class="nav-row"><span></span><button class="btn primary" data-act="next" ${o ? '' : 'disabled'}>Neste: beboerne</button></div>`;
+  return html;
+}
+function v2() {
+  const R = S.rows;
+  let html = `<section class="card">
+    <div class="card-head"><div><h2 class="h2">Legg inn boenhetene og beboerne</h2><p class="sub">De fleste styrer har en Excel-liste fra før. Tun gjenkjenner kolonnene selv.</p></div></div>
+    <label class="drop" id="dropRows" for="rowFile">${ICON.upload}<p><b>Dra Excel- eller CSV-filen hit</b>, eller trykk for å velge</p><p class="fine">Filen leses bare i nettleseren din.</p></label>
+    <input type="file" id="rowFile" accept=".xlsx,.xls,.ods,.csv,.txt" hidden>
+    <div class="or-row" style="margin-top:12px"><button class="btn" data-act="exrows">Bruk eksempelfilen</button></div>
+    ${S.rowErr ? `<p class="err" style="margin-top:12px">${esc(S.rowErr)}</p>` : ''}
+  </section>`;
+  if (R) {
+    const show = R.rows.slice(0, 12);
+    html += `<section class="card">
+      <div class="card-head"><div><h2 class="h2">${esc(S.rowSource)}</h2><p class="sub">${R.rows.length} rader, ${R.enheter} enheter</p></div>
+      <div class="checks">${R.mangler ? `<span class="pill warn">${R.mangler} mangler gyldig e-post</span>` : ''}${R.sjekk ? `<span class="pill warn">${R.sjekk} enhet må sjekkes</span>` : ''}${R.med ? `<span class="pill info">${R.med} medeier</span>` : ''}${!R.mangler && !R.sjekk ? `<span class="pill good">${ICON.check}Alt ser riktig ut</span>` : ''}</div></div>
+      <div class="map" style="margin-bottom:12px">${R.head.map((h, i) => { const f = Object.keys(R.map).find(k => R.map[k] === i); return `<span>${esc(h || 'Kolonne ' + (i + 1))} → ${f ? `<b>${FNAME[f]}</b>` : '<span class="muted">brukes ikke</span>'}</span>`; }).join('')}</div>
+      ${!('enhet' in R.map) || !('navn' in R.map) ? `<p class="err">Fant ikke kolonner for ${!('enhet' in R.map) ? 'enhet' : ''}${!('enhet' in R.map) && !('navn' in R.map) ? ' og ' : ''}${!('navn' in R.map) ? 'navn' : ''}. Gi kolonnene overskrifter som «Leilighet» og «Navn», så finner Tun dem.</p>` : ''}
+      <div class="tbl"><table><thead><tr><th>Enhet</th><th>Navn</th><th>E-post</th><th>Telefon</th><th class="r">m²</th><th>Merknad</th></tr></thead><tbody>
+      ${show.map(r => `<tr><td class="mono nowrap">${esc(r.enhet)}</td><td class="nowrap">${esc(r.navn)}</td><td class="muted">${esc(r.epost)}</td><td class="num nowrap">${esc(r.tlf)}</td><td class="r">${esc(r.areal)}</td><td>${r.flags.map(([f, c]) => `<span class="flag ${c}">${f}</span>`).join('<br>')}</td></tr>`).join('')}
+      </tbody></table></div>
+      ${R.rows.length > show.length ? `<p class="more" style="margin-top:8px">Viser 12 av ${R.rows.length} rader. ${R.rows.slice(12).filter(r => r.flags.length).length} av de øvrige har merknader.</p>` : ''}
+      ${R.rows.some(r => r.flags.length) ? `<div style="margin-top:14px"><h3 class="h3">Det Tun ber dere sjekke</h3><ul class="mini-list" style="margin-top:6px">${R.rows.filter(r => r.flags.length).map(r => `<li><div class="mini-top"><span class="mini-title">${esc(r.navn || '(uten navn)')}, ${esc(r.enhet || 'ingen enhet')}</span><span>${r.flags.map(([f, c]) => `<span class="flag ${c}">${f}</span>`).join(' · ')}</span></div></li>`).join('')}</ul></div>` : ''}
+    </section>`;
+  }
+  html += `<div class="nav-row"><button class="btn" data-act="back">Tilbake</button><button class="btn primary" data-act="next">${R ? 'Neste: arkivet' : 'Hopp over'}</button></div>`;
+  return html;
+}
+function v3() {
+  const D = S.docs;
+  let html = `<section class="card">
+    <div class="card-head"><div><h2 class="h2">Last opp arkivet</h2><p class="sub">Dra inn alt dere har: protokoller, vedtekter, avtaler, skannede papirer. Tun sorterer det.</p></div></div>
+    <label class="drop" id="dropDocs" for="docFiles">${ICON.folder}<p><b>Dra filene eller hele mappen hit</b>, eller trykk for å velge</p><p class="fine">Filene leses bare i nettleseren din. I demoen sorteres de etter filnavnet.</p></label>
+    <input type="file" id="docFiles" multiple hidden>
+    <div class="or-row" style="margin-top:12px"><button class="btn" data-act="exdocs">Bruk eksempelmappen (${EX_FILES.length} filer)</button></div>
+  </section>`;
+  if (D && S.sorting) {
+    html += `<section class="card"><div class="sorting"><b>Sorterer ${D.length} filer...</b><div class="progress"><span style="width:100%;transition:width 1.3s ease-out"></span></div><p class="fine">Leser filnavn, år og type, og ser etter duplikater.</p></div></section>`;
+  } else if (D) {
+    const byCat = {}; D.forEach((d, i) => (byCat[d.cat] = byCat[d.cat] || []).push([d, i]));
+    const order = Object.keys(CATS).filter(c => byCat[c]);
+    const dups = D.filter(d => d.dup).length, sjekk = (byCat.sjekk || []).length;
+    html += `<section class="card">
+      <div class="card-head"><div><h2 class="h2">${D.length} filer sortert i ${order.filter(c => c !== 'sjekk').length} kategorier</h2><p class="sub">${S.docSource}</p></div>
+      <div class="checks">${sjekk ? `<span class="pill warn">${sjekk} må sjekkes</span>` : ''}${dups ? `<span class="pill info">${dups} duplikat</span>` : ''}</div></div>
+      <div class="cat-grid">${order.map(c => `<div class="cat ${c === 'sjekk' ? 'sjekk' : ''}"><div class="cat-h"><span>${CATS[c]}</span><span>${byCat[c].length}</span></div><ul class="files">${byCat[c].slice(0, c === 'sjekk' ? 99 : 5).map(([d, i]) => `<li><span class="fn" title="${esc(d.name)}">${esc(d.name)}</span>${c === 'sjekk' ? `<select data-move="${i}" aria-label="Velg kategori for ${esc(d.name)}"><option value="">Velg kategori</option>${Object.keys(CATS).filter(k => k !== 'sjekk').map(k => `<option value="${k}">${CATS[k]}</option>`).join('')}</select>` : d.dup ? '<span class="pill info">Duplikat</span>' : `<span class="yr">${d.yr}</span>`}</li>`).join('')}</ul>${byCat[c].length > 5 && c !== 'sjekk' ? `<span class="more">og ${byCat[c].length - 5} til</span>` : ''}</div>`).join('')}</div>
+    </section>`;
+    if (S.docSource.startsWith('Eksempel')) {
+      html += `<section class="card">
+        <div class="card-head"><div><h2 class="h2">Funnet i dokumentene</h2><p class="sub">I produktet leser Tun innholdet, ikke bare navnet. Dette er eksempler på hva det gir. Velg det som skal inn i årshjulet.</p></div></div>
+        <ul class="found">${FOUND.map((f, i) => `<li><input type="checkbox" id="fd${i}" data-found="${i}" ${S.found[i] ? 'checked' : ''}><label for="fd${i}"><b>${esc(f.t)}</b><br><span class="sub">${esc(f.a)}</span></label><span class="fs">Fra ${esc(f.f)}</span></li>`).join('')}</ul>
+      </section>`;
+    } else {
+      html += `<section class="card"><p class="sub">Filene er sortert etter navnet. I produktet leser Tun også innholdet, foreslår frister til årshjulet og gjør dokumentene søkbare for «Spør arkivet».</p></section>`;
+    }
+  }
+  html += `<div class="nav-row"><button class="btn" data-act="back">Tilbake</button><button class="btn primary" data-act="next" ${S.sorting ? 'disabled' : ''}>${D ? 'Neste: ferdig' : 'Hopp over'}</button></div>`;
+  return html;
+}
+function v4() {
+  const o = S.org, R = S.rows, D = S.docs;
+  const enheter = R ? R.enheter : (S.counts.seksjoner || 0);
+  const beboere = R ? R.rows.filter(r => r.navn).length : 0;
+  const docs = D ? D.filter(d => !d.dup).length : 0;
+  const lov = plikter().filter(p => p.on || p.val).length;
+  const funn = D && S.docSource.startsWith('Eksempel') ? S.found.filter(Boolean).length : 0;
+  const min = Math.max(1, Math.round((Date.now() - T0) / 60000));
+  const sjekkDocs = D ? D.filter(d => d.cat === 'sjekk').length : 0;
+  const sjekkRows = R ? R.rows.filter(r => r.flags.some(f => f[1] !== 'info')).length : 0;
+  const demo = o.form === 'ESEK' ? 'tun-demo-sameie.html' : 'tun-demo.html';
+  return `
+  <section class="card">
+    <div class="card-head"><div><div class="eyebrow">Ferdig</div><h2 class="h2" style="font-size:24px;margin-top:2px">${esc(o.navn)} er klar til bruk</h2><p class="sub">Du brukte ${min} ${min === 1 ? 'minutt' : 'minutter'}. Resten av arkivet kan legges inn når som helst.</p></div></div>
+    <div class="tiles">
+      <div class="tile"><span class="tile-k">Enheter</span><span class="tile-v">${nf(enheter)}</span><span class="tile-s">${R ? 'fra beboerlisten' : 'oppgitt i steg 1'}</span></div>
+      <div class="tile"><span class="tile-k">Beboere</span><span class="tile-v">${nf(beboere)}</span><span class="tile-s">${R ? `${R.rows.filter(r => r.epost && !r.flags.some(f => f[0].includes('e-post'))).length} med e-post` : 'ikke lagt inn ennå'}</span></div>
+      <div class="tile"><span class="tile-k">Dokumenter</span><span class="tile-v">${nf(docs)}</span><span class="tile-s">${D ? 'sortert i arkivet' : 'ikke lagt inn ennå'}</span></div>
+      <div class="tile"><span class="tile-k">Årshjulet</span><span class="tile-v">${lov + funn}</span><span class="tile-s">${lov} faste plikter${funn ? ` og ${funn} fra dokumentene` : ''}</span></div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Det som gjenstår</h2><p class="sub">Tun minner styret på dette til det er gjort.</p></div></div>
+    <ul class="todo">
+      ${o.styret.slice(0, 6).map(([n, r], i) => `<li><span><b>${esc(n)}</b> <span class="muted">${esc(r)}</span></span>${S.invited[i] ? `<span class="pill good">${ICON.check}Invitert</span>` : `<button class="btn" data-invite="${i}">${ICON.send}Inviter</button>`}</li>`).join('')}
+      <li><span><b>Gi beboerne tilgang til beboersiden</b> <span class="muted">${beboere ? `${beboere} personer` : 'når beboerlisten er lagt inn'}</span></span><button class="btn" data-toast="I produktet får hver beboer en lenke på e-post til beboersiden. I demoen sendes ingenting.">Send lenke</button></li>
+      ${sjekkRows ? `<li><span><b>Sjekk ${sjekkRows} rader i beboerlisten</b> <span class="muted">e-post eller enhet mangler</span></span><button class="btn" data-go="2">Gå til listen</button></li>` : ''}
+      ${sjekkDocs ? `<li><span><b>Sorter ${sjekkDocs} dokumenter</b> <span class="muted">Tun var usikker på dem</span></span><button class="btn" data-go="3">Gå til arkivet</button></li>` : ''}
+      <li><span><b>Sett opp fakturering av felleskostnader</b> <span class="muted">valgfritt</span></span><button class="btn" data-toast="Fakturering kommer senere i produktet. Til da fortsetter dere som i dag.">Senere</button></li>
+    </ul>
+  </section>
+  <div class="nav-row"><button class="btn" data-act="back">Tilbake</button><a class="btn primary" href="${demo}" style="text-decoration:none">Se hvordan det ser ut i demoen</a></div>
+  ${o.example ? '' : `<p class="fine">Demoen viser et oppdiktet ${o.form === 'ESEK' ? 'sameie' : 'borettslag'}. I produktet ville det vært ${esc(o.navn)} med tallene dere la inn her.</p>`}`;
+}
+
+function render() {
+  $('stepper').innerHTML = vStepper();
+  $('step').innerHTML = [v1, v2, v3, v4][S.step - 1]();
+  bindDrops();
+}
+function go(n) { S.step = n; S.max = Math.max(S.max, n); render(); window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }); }
+
+/* ---------- Hendelser ---------- */
+function bindDrops() {
+  [['dropRows', f => f[0] && readRows(f[0])], ['dropDocs', f => f.length && setDocs([...f], `${f.length} filer fra maskinen din`)]].forEach(([id, fn]) => {
+    const el = $(id); if (!el) return;
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('is-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('is-over'));
+    el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('is-over'); fn(e.dataTransfer.files); });
+  });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button,[data-go]'); if (!b) return;
+  if (b.dataset.go) { const n = +b.dataset.go; if (n <= S.max) go(n); return; }
+  if (b.dataset.pick) return pick(b.dataset.pick);
+  if (b.dataset.invite != null) { S.invited[b.dataset.invite] = true; render(); return toast('I produktet får styremedlemmet en e-post med innlogging. I demoen sendes ingenting.'); }
+  if (b.dataset.toast) return toast(b.dataset.toast);
+  const a = b.dataset.act;
+  if (a === 'example') useExample();
+  else if (a === 'next') go(S.step + 1);
+  else if (a === 'back') go(S.step - 1);
+  else if (a === 'exrows') setRows(exampleRows(), 'Eksempel: beboerliste.xlsx');
+  else if (a === 'exdocs') setDocs(EX_FILES.map((name, i) => ({ name, size: 40000 + i * 9137 })), 'Eksempel: Styremappe Kløverhagen');
+});
+document.addEventListener('submit', e => { e.preventDefault(); if (e.target.id === 'lookForm') { S.q = $('q').value; search(S.q); } });
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') S.q = e.target.value;
+  if (e.target.id === 'nSeks' || e.target.id === 'nBolig') {
+    const v = e.target.value === '' ? null : Math.max(0, Math.round(+e.target.value));
+    if (e.target.id === 'nSeks') S.counts.seksjoner = v; else S.counts.bolig = v;
+    $('pliktSlot').innerHTML = pliktCard();
+  }
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'rowFile' && e.target.files[0]) readRows(e.target.files[0]);
+  if (e.target.id === 'docFiles' && e.target.files.length) setDocs([...e.target.files], `${e.target.files.length} filer fra maskinen din`);
+  if (e.target.dataset.move != null && e.target.value) { S.docs[+e.target.dataset.move].cat = e.target.value; render(); }
+  if (e.target.dataset.found != null) S.found[+e.target.dataset.found] = e.target.checked;
+});
+
+$('brand').innerHTML = `${LOGO}<div><div class="brand-name">Tun</div><div class="brand-sub">oppstart</div></div>`;
+render();
+</script>
+</body>
+</html>
