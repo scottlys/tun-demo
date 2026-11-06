@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tun styreportal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Schibsted+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: fast venstremeny med modulene, arbeidsflate med kort i rutenett. Årshjulet og fasadekartet er de to bildene som bærer identiteten. */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --surface-2:#E9EEED; --line:#D9E0DE; --line-2:#C2CDCA;
+  --ink:#14232A; --ink-2:#465A61; --muted:#6B7D84;
+  --accent:#1D6B64; --accent-ink:#FFFFFF; --accent-soft:#DCEDEA; --ochre:#B7862B;
+  --side-bg:#13262C; --side-ink:#DCE8E6; --side-muted:#8EA6A5; --side-hover:#1B333A; --side-active:#244650; --side-line:#24404A;
+  --good:#23794A; --good-soft:#DFF0E5; --warn:#94590A; --warn-soft:#F6EAD3; --crit:#B23A32; --crit-soft:#F7E0DD; --info:#2A5F8F; --info-soft:#DEE9F4;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --scrim:rgba(12,24,28,.38); --shadow:0 18px 48px rgba(12,30,36,.22);
+  --f-display:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1618; --surface:#152023; --surface-2:#1C2A2E; --line:#27373B; --line-2:#36494E;
+    --ink:#E3ECEA; --ink-2:#AFC0BE; --muted:#80959A;
+    --accent:#4DB3A7; --accent-ink:#06201D; --accent-soft:#16342F; --ochre:#D8A64A;
+    --side-bg:#0A1315; --side-ink:#D6E3E1; --side-muted:#7F9796; --side-hover:#13232A; --side-active:#1A353C; --side-line:#1A2B30;
+    --good:#5DC08A; --good-soft:#15301F; --warn:#E2A548; --warn-soft:#33260F; --crit:#EE7E73; --crit-soft:#3A1D1A; --info:#7DB2E8; --info-soft:#15283A;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+    --scrim:rgba(0,0,0,.55); --shadow:0 18px 48px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --surface:#152023; --surface-2:#1C2A2E; --line:#27373B; --line-2:#36494E;
+  --ink:#E3ECEA; --ink-2:#AFC0BE; --muted:#80959A;
+  --accent:#4DB3A7; --accent-ink:#06201D; --accent-soft:#16342F; --ochre:#D8A64A;
+  --side-bg:#0A1315; --side-ink:#D6E3E1; --side-muted:#7F9796; --side-hover:#13232A; --side-active:#1A353C; --side-line:#1A2B30;
+  --good:#5DC08A; --good-soft:#15301F; --warn:#E2A548; --warn-soft:#33260F; --crit:#EE7E73; --crit-soft:#3A1D1A; --info:#7DB2E8; --info-soft:#15283A;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --scrim:rgba(0,0,0,.55); --shadow:0 18px 48px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-size:.88em;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+
+/* Skall */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--side-bg);color:var(--side-ink);display:flex;flex-direction:column;gap:20px;padding:22px 14px 18px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1;letter-spacing:-.02em}
+.brand-sub{font-size:12px;color:var(--side-muted);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.entity{border:1px solid var(--side-line);border-radius:10px;padding:11px 12px;display:grid;gap:2px}
+.entity-name{font-weight:600}
+.entity-meta{font-size:12.5px;color:var(--side-muted)}
+.nav{display:grid;gap:2px}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;color:var(--side-ink);padding:9px 10px;border-radius:8px;text-align:left;font-size:15px}
+.nav-item svg{width:19px;height:19px;flex:none;opacity:.85}
+.nav-item:hover{background:var(--side-hover)}
+.nav-item.is-active{background:var(--side-active);font-weight:600}
+.nav-item.is-active svg{opacity:1;color:var(--ochre)}
+.nav-count{margin-left:auto;font-size:12px;font-variant-numeric:tabular-nums;background:var(--ochre);color:#1a1405;border-radius:999px;padding:0 7px;font-weight:700;line-height:19px}
+.role{margin-top:auto;display:grid;gap:7px;padding:0 4px}
+.role-label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--side-muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--side-hover);border-radius:9px;padding:3px;gap:3px}
+.seg button{border:0;background:none;color:var(--side-ink);padding:7px 0;border-radius:7px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--side-ink);color:var(--side-bg);font-weight:600}
+
+.main{min-width:0}
+.wrap{max-width:1320px;margin:0 auto;padding-block:26px 40px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.top h1{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.top p{margin:5px 0 0;color:var(--ink-2)}
+.top-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;border:1px dashed var(--line-2);color:var(--ink-2);border-radius:999px;padding:3px 10px;background:var(--surface)}
+.foot{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+
+/* Byggesteiner */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:14px}
+.h2{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.h3{font-size:15px;font-weight:600}
+.sub{color:var(--ink-2);font-size:14px;margin:2px 0 0}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px}
+.grid-2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tiles.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:4px;text-align:left;min-width:0}
+button.tile:hover{border-color:var(--line-2)}
+.tile-k{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tile-v{font-family:var(--f-display);font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile-s{font-size:13.5px;color:var(--ink-2)}
+.tile.crit .tile-v{color:var(--crit)}
+.tile.warn .tile-v{color:var(--warn)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--ink-2)}
+.pill svg{width:12px;height:12px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.info{background:var(--info-soft);color:var(--info)}
+.pill.accent{background:var(--accent-soft);color:var(--accent)}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 13px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn svg{width:16px;height:16px}
+.link{border:0;background:none;color:var(--accent);font-weight:600;padding:0;font-size:14px}
+.link:hover{text-decoration:underline}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface);font-weight:600}
+.chip .n{opacity:.65;margin-left:4px;font-variant-numeric:tabular-nums}
+.search{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 11px;min-width:0;width:min(320px,100%)}
+select.search{width:auto}
+.search::placeholder{color:var(--muted)}
+
+dl.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px 16px;margin:0;font-size:14.5px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+
+/* Tabeller */
+.tbl{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+td.nowrap{white-space:nowrap}
+tr.sum td{font-weight:700;border-bottom:1px solid var(--line-2)}
+tr.head td{font-family:var(--f-display);font-weight:600;padding-top:16px;border-bottom:1px solid var(--line-2)}
+tr.total td{font-family:var(--f-display);font-weight:700;font-size:16px;border-bottom:0;padding-top:14px}
+.pos{color:var(--good)} .neg{color:var(--crit)}
+
+/* Oversikt */
+.actions{list-style:none;margin:0;padding:0;display:grid}
+.act{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.act:first-child{border-top:0;padding-top:2px}
+.act-t{font-weight:600}
+.act-s{grid-column:2;color:var(--ink-2);font-size:14px}
+.act .link{grid-row:1;grid-column:3;white-space:nowrap}
+.agenda{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:2px}
+.ag{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:start}
+.ag:first-child{border-top:0}
+.ag-d{font-family:var(--f-display);text-align:center;line-height:1.05;border-radius:8px;background:var(--surface-2);padding:6px 0}
+.ag-d b{display:block;font-size:19px}
+.ag-d span{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ag-t{font-weight:600}
+.ag-s{font-size:13.5px;color:var(--ink-2)}
+.dotc{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.c-frist{background:var(--s1);fill:var(--s1)} .c-mote{background:var(--s2);fill:var(--s2)} .c-kontroll{background:var(--s3);fill:var(--s3)}
+.mini-list{list-style:none;margin:0;padding:0;display:grid}
+.mini-list li{padding:10px 0;border-top:1px solid var(--line);display:grid;gap:3px}
+.mini-list li:first-child{border-top:0;padding-top:0}
+.mini-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.mini-title{font-weight:600}
+.mini-meta{font-size:13px;color:var(--muted)}
+.progress{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:10px 0 6px}
+.progress span{display:block;height:100%;background:var(--accent);border-radius:999px}
+.bigline{font-family:var(--f-display);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+
+/* Fasadekart */
+.facades{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}
+.facade{display:grid;gap:0}
+.roof{height:12px;margin:0 -7px;background:var(--line-2);border-radius:4px 4px 0 0}
+.floors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-top:0}
+.win{position:relative;aspect-ratio:16/10;border-radius:5px;border:1px solid var(--line-2);background:var(--surface);font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);display:grid;place-items:center;padding:0}
+.win:hover{border-color:var(--ink)}
+.win-utleid{background:var(--s1);border-color:var(--s1);color:#fff}
+.win-korttid{background:var(--s2);border-color:var(--s2);color:#fff}
+.win-dot{position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:var(--crit);border:2px solid var(--surface-2)}
+.door-row{display:flex;justify-content:center;background:var(--surface-2);border:1px solid var(--line);border-top:0;padding-top:2px;border-radius:0 0 4px 4px}
+.door{width:34px;height:26px;border-radius:5px 5px 0 0;background:var(--line-2)}
+.facade-label{margin-top:8px;font-weight:600;font-size:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);align-items:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line-2)}
+.sw.round{border-radius:50%}
+
+/* Utleie */
+.req{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:12px}
+.req + .req{margin-top:12px}
+.req-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.req-actions{display:flex;flex-wrap:wrap;gap:8px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.meter-row{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 92px;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.meter-row:first-of-type{border-top:0}
+.meter{position:relative;height:14px;border-radius:0 4px 4px 0;background:var(--surface-2)}
+.meter-f{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--s2)}
+.meter-f.over{background:var(--crit)}
+.meter-lim{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink)}
+.meter-cap{font-size:12px;color:var(--muted);margin-top:4px}
+.rules{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:14.5px;display:grid;gap:8px}
+.rules p{margin:0}
+
+/* Dokumenter */
+.docs{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+.doclist{list-style:none;margin:0;padding:0}
+.doc{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 6px;border-top:1px solid var(--line);cursor:pointer;border-radius:6px}
+.doc:first-child{border-top:0}
+.doc:hover{background:var(--surface-2)}
+.doc svg{width:22px;height:22px;color:var(--accent)}
+.doc-t{font-weight:600;overflow-wrap:anywhere}
+.doc-m{font-size:13px;color:var(--muted)}
+.empty{padding:22px 4px;color:var(--muted)}
+.ask{position:sticky;top:20px;display:grid;gap:12px}
+.ask-head{display:flex;gap:10px;align-items:center}
+.ask-head svg{width:22px;height:22px;color:var(--ochre)}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:13.5px;text-align:left}
+.sugg button:hover{border-color:var(--accent);color:var(--accent)}
+.log{display:grid;gap:12px;max-height:440px;overflow-y:auto}
+.q{justify-self:end;background:var(--ink);color:var(--surface);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:90%}
+.a{background:var(--surface-2);border-radius:12px 12px 12px 2px;padding:10px 12px;display:grid;gap:8px}
+.a p{margin:0}
+.srcs{display:flex;flex-wrap:wrap;gap:6px}
+.src{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:3px 8px;font-size:12.5px;color:var(--accent);font-weight:600;text-align:left}
+.ask form{display:flex;gap:8px}
+.ask input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 11px}
+.fine{font-size:12.5px;color:var(--muted);margin:0}
+
+/* Styret */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.person{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:8px;background:var(--surface)}
+.person-top{display:flex;gap:12px;align-items:center}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;background:var(--accent-soft);color:var(--accent);flex:none}
+.person-name{font-weight:700}
+.person-c{font-size:13.5px;color:var(--ink-2);display:grid;gap:2px}
+.person-c span{overflow-wrap:anywhere}
+.new-row td{background:var(--accent-soft)}
+
+/* Årshjul */
+.wheel-wrap{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:20px;align-items:start}
+.wheel{width:100%;height:auto;display:block;max-width:430px;margin:0 auto}
+.wseg{fill:var(--surface-2);stroke:none}
+.wseg.is-now{fill:var(--accent-soft)}
+.wlab{font:600 12.5px var(--f-body);fill:var(--ink-2);text-transform:uppercase;letter-spacing:.05em}
+.wneedle{stroke:var(--ochre);stroke-width:2;stroke-linecap:round}
+.wneedle-hub{fill:var(--ochre)}
+.wdot{stroke:var(--surface);stroke-width:2.5;cursor:pointer}
+.wdot.is-sel{stroke:var(--ink);stroke-width:3}
+.wc1{font:600 12px var(--f-body);fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.wc2{font:700 21px var(--f-display);fill:var(--ink)}
+.wc3{font:500 13px var(--f-body);fill:var(--ink-2)}
+.month-block + .month-block{margin-top:6px}
+.month-h{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 0 4px}
+.ev{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:8px 8px;border-radius:8px;align-items:start}
+.ev.is-sel{background:var(--accent-soft)}
+.ev-d{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:14px}
+.ev-t{font-weight:600}
+.ev-s{font-size:13.5px;color:var(--ink-2)}
+
+/* Regnskap */
+.hbars{display:grid;gap:7px}
+.hbar{display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 78px;gap:10px;align-items:center;font-size:14px;border-radius:6px;padding:2px 0}
+.hbar:hover .hbar-f,.hbar:focus .hbar-f{filter:brightness(1.1)}
+.hbar-l{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-t{height:16px;position:relative}
+.hbar-f{position:absolute;left:0;top:0;bottom:0;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
+.hbar-v{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .baseline{stroke:var(--line-2);stroke-width:1}
+.chart .axis{font:500 12px var(--f-body);fill:var(--muted)}
+.chart .axis.strong{fill:var(--ink);font-weight:700}
+.chart .axis.small{font-size:11px}
+.chart .bar{cursor:pointer}
+.chart .bar.s1{fill:var(--s1)} .chart .bar.s2{fill:var(--s2)}
+.chart .bar.dim{opacity:.4}
+.chart .bar:hover{opacity:1}
+.yr-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* Min side */
+.pay-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pay{display:grid;gap:3px;justify-items:center;font-size:12px;color:var(--muted);min-width:42px}
+.pay i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--good-soft);color:var(--good);font-style:normal;font-weight:700}
+textarea{width:100%;min-height:96px;border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;background:var(--surface);resize:vertical}
+label.f{display:grid;gap:5px;font-weight:600;font-size:14px}
+.form{display:grid;gap:10px}
+
+/* Pliktsjekk, næringsseksjon, lenke mellom demoene */
+a.badge{text-decoration:none;color:var(--accent);border-style:solid;border-color:var(--accent);font-weight:600}
+a.badge:hover{background:var(--accent-soft)}
+.win-naering{background:repeating-linear-gradient(135deg,var(--surface) 0 5px,var(--surface-2) 5px 10px);border-style:dashed;color:var(--ink)}
+.plikter{display:grid}
+.plikt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;padding:10px 0;border-top:1px solid var(--line);align-items:start}
+.plikt:first-child{border-top:0;padding-top:0}
+.plikt-t{font-weight:600}
+.plikt-s{grid-column:1;font-size:13.5px;color:var(--ink-2)}
+.plikt .pill{grid-column:2;grid-row:1}
+
+/* Skuff, verktøytips, toast */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--surface);z-index:41;box-shadow:var(--shadow);overflow-y:auto;padding:22px max(22px,env(safe-area-inset-right,0px)) 30px 22px;padding-top:max(22px,env(safe-area-inset-top,0px));display:grid;gap:18px;align-content:start}
+.drawer-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.drawer h2{font-size:24px;letter-spacing:-.02em}
+.x{border:0;background:var(--surface-2);border-radius:8px;width:34px;height:34px;display:grid;place-items:center;flex:none}
+.x svg{width:18px;height:18px}
+.dsec{display:grid;gap:9px;border-top:1px solid var(--line);padding-top:14px}
+.preview{border:1px solid var(--line);border-radius:8px;padding:22px 24px;display:grid;gap:9px;background:var(--bg)}
+.preview i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--surface);font-size:13px;padding:6px 9px;border-radius:7px;max-width:280px;box-shadow:var(--shadow)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:max(22px,env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:var(--surface);padding:11px 16px;border-radius:10px;box-shadow:var(--shadow);max-width:min(560px,calc(100% - 32px));font-size:14.5px}
+
+@media (max-width:1180px){
+  .docs{grid-template-columns:minmax(0,1fr)}
+  .ask{position:static}
+  .tiles.five{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1000px){
+  .grid-2,.grid-2e,.grid-3,.wheel-wrap{grid-template-columns:minmax(0,1fr)}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px;padding:14px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+  .entity{display:none}
+  .nav{order:3;width:100%;display:flex;overflow-x:auto;gap:4px;padding-bottom:2px}
+  .nav-item{width:auto;white-space:nowrap;padding:7px 10px}
+  .role{margin:0 0 0 auto;padding:0}
+  .role-label{display:none}
+  .seg button{padding:5px 12px}
+  .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 32px}
+  .top h1{font-size:25px}
+}
+@media (max-width:560px){
+  .tiles,.tiles.five{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tile{padding:12px}
+  .tile-v{font-size:19px}
+  .act{grid-template-columns:minmax(0,1fr) auto}
+  .act .pill{grid-column:1;grid-row:1;justify-self:start}
+  .act .link{grid-column:2;grid-row:1}
+  .act-t,.act-s{grid-column:1 / -1}
+  .meter-row{grid-template-columns:minmax(0,1fr) 80px}
+  .meter-row .meter-wrap{grid-column:1 / -1;grid-row:2}
+  .hbar{grid-template-columns:minmax(0,1fr) 70px}
+  .hbar-t{grid-column:1 / -1;grid-row:2}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .drawer{animation:slide .22s ease-out}
+  @keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <main class="main">
+    <div class="wrap">
+      <header class="top" id="top"></header>
+      <div id="view" style="display:grid;gap:20px"></div>
+      <footer class="foot">Demo for samtaler med styrer. Kløverhagen borettslag finnes ikke, og alle navn, adresser, numre og tall er oppdiktet. Ingenting lagres og ingenting sendes.</footer>
+    </div>
+  </main>
+</div>
+<div class="scrim" id="scrim" hidden data-action="close"></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="drawerTitle"></aside>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ---------- Verktøy ---------- */
+const TODAY = new Date(2026, 10, 6);
+const D = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const daysTo = s => Math.round((D(s) - TODAY) / 864e5);
+const fd = (s, o) => D(s).toLocaleDateString('nb-NO', o || { day: 'numeric', month: 'long', year: 'numeric' });
+const fdm = s => fd(s, { day: 'numeric', month: 'long' });
+const nf = n => Math.round(n).toLocaleString('nb-NO');
+const kr = n => nf(n) + ' kr';
+const pct = (x, d = 1) => (x * 100).toFixed(d).replace('.', ',').replace('-', '−') + ' %';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const initials = n => n.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('');
+const $ = id => document.getElementById(id);
+
+const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  home: I('<path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'),
+  units: I('<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/>'),
+  key: I('<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M16 7l2 2M14 9l2 2"/>'),
+  folder: I('<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/>'),
+  people: I('<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.2.2 3.8 1.8 4.5 4.3"/>'),
+  wheel: I('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3.5v5M12 15.5v5M3.5 12h5M15.5 12h5"/>'),
+  receipt: I('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>'),
+  chart: I('<path d="M4 20V4M4 20h16"/><path d="M8.5 16v-4M12.5 16V8M16.5 16v-6"/>'),
+  me: I('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.6 3.8-5.5 7-5.5s6 1.9 7 5.5"/>'),
+  doc: I('<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M9.5 12h5M9.5 15.5h5"/>'),
+  ask: I('<path d="M12 3.5 13.6 9l5.4 1.6-5.4 1.6L12 17.7l-1.6-5.5L5 10.6 10.4 9z"/><path d="M18.5 16.5 19.2 19l2.3.7-2.3.7-.7 2.4-.7-2.4-2.3-.7 2.3-.7z"/>'),
+  x: I('<path d="M6 6l12 12M18 6 6 18"/>'),
+  check: I('<path d="m5 12.5 4.2 4L19 7"/>'),
+  alert: I('<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 17h.01"/>'),
+  clock: I('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  info: I('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>'),
+  send: I('<path d="M4 12 20 4l-5 16-3.5-6.5z"/><path d="m11.5 13.5 3-3"/>')
+};
+const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="4" width="24" height="6" rx="1.6" fill="#DCE8E6"/><rect x="4" y="12" width="6" height="16" rx="1.6" fill="#DCE8E6"/><rect x="22" y="12" width="6" height="16" rx="1.6" fill="#DCE8E6"/><circle cx="16" cy="21" r="3.6" fill="#C9973A"/></svg>`;
+
+/* ---------- Regler (forenklet, se markedsanalysen for kilder) ---------- */
+const RULES = {
+  korttidGrense: 30,
+  korttidTekst: 'Bor andelseieren selv i boligen, kan hele boligen leies ut i til sammen opptil 30 døgn i året uten styrets godkjenning (burettslagslova § 5-4). Vedtektene kan ikke snevre dette inn, og regelen gjelder også gratis utlån. Utover det trengs styrets godkjenning.',
+  korttidSameie: 'I eierseksjonssameier er grensen 90 døgn i året for korttidsutleie, altså leie i inntil 30 døgn om gangen, og vedtektene kan sette den til mellom 60 og 120 døgn (eierseksjonsloven § 24). Tun bruker riktig grense for hver organisasjonsform.',
+  korttidSvar: 'Ja, så lenge du selv bor i leiligheten, kan du leie ut hele boligen i til sammen 30 døgn i året uten styrets godkjenning. Styret ber om at du registrerer hvert opphold her, slik at døgnene telles riktig. Vil du leie ut lenger, må du søke styret.',
+  svarfrist: 'Svarer ikke styret skriftlig innen én måned, regnes leietakeren som godkjent.'
+};
+
+/* ---------- Data: borettslaget ---------- */
+const OPP = [{ k: 'A', adr: 'Kløverveien 2' }, { k: 'B', adr: 'Kløverveien 4' }, { k: 'C', adr: 'Kløverveien 6' }];
+const NAMES = ['Per Ivar Solheim', 'Tobias Engen', 'Nora Sæther', 'Erik Fosse', 'Linnea Dahl', 'Kristoffer Moe', 'Marte Rønning', 'Hanne Myrvold', 'Ali Rahimi', 'Silje Holm', 'Morten Aas', 'Henrik Strand',
+  'Ida Vik', 'Magnus Lie', 'Thea Nyhus', 'Sara Lindqvist', 'Anders Kvam', 'Emilie Brekke', 'Sindre Tangen', 'Maja Wold', 'Ole Andreas Lunde', 'Julie Hovland', 'Mats Ødegård', 'Jonas Berg',
+  'Karoline Bakke', 'Fredrik Nilsen', 'Amira Hassan', 'Tiril Sandvik', 'Daniel Kowalski', 'Ragnhild Fjeld', 'Ingrid Haugland', 'Even Grønli', 'Sofie Aamodt', 'Lukas Bjerke', 'Vilde Tveit', 'Petter Hagen'];
+const slug = n => n.toLowerCase().replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'aa').replace(/[^a-z ]/g, '').trim().split(/\s+/).join('.');
+const FK_RATE = 80.5;
+const TOTAL_GJELD = 16080000;
+const units = [];
+(() => {
+  let i = 0;
+  for (const o of OPP) for (let f = 1; f <= 4; f++) for (let n = 1; n <= 3; n++) {
+    const size = (f === 1 ? [52, 74, 88] : [56, 74, 88])[n - 1];
+    const bnr = `H0${f}0${n}`;
+    units.push({
+      id: `${o.k}-${bnr}`, opp: o.k, adr: o.adr, floor: f, bnr, andel: i + 1, size,
+      rom: size < 60 ? 2 : size < 80 ? 3 : 4, fk: Math.round(size * FK_RATE),
+      eier: NAMES[i], epost: slug(NAMES[i]) + '@epost.example',
+      tlf: `+47 9•• •• ${String((i * 37) % 900 + 100)}`,
+      lade: i % 2 === 0, park: i % 3 === 0 ? `P${String(i / 3 + 1).padStart(2, '0')}` : null,
+      bod: `${o.k}-${String((f - 1) * 3 + n).padStart(2, '0')}`, siden: 1998 + (i * 7) % 26,
+      bruk: 'selv', bet: 'betalt'
+    });
+    i++;
+  }
+})();
+const unit = id => units.find(u => u.id === id);
+units.forEach(u => { u.belop = u.fk + (u.lade ? 350 : 0) + (u.park ? 450 : 0); u.gjeld = Math.round(TOTAL_GJELD * u.size / 2604); });
+['B-H0302', 'C-H0303'].forEach(id => unit(id).bet = 'ubetalt');
+unit('B-H0103').bet = 'purret';
+
+const LANGTID = [
+  { enhet: 'A-H0201', leietaker: 'Mina Karlsen', kontakt: 'mina.karlsen@epost.example', fra: '2026-08-01', til: '2027-07-31', sak: '19/26' },
+  { enhet: 'B-H0303', leietaker: 'Viktor Hansen', kontakt: 'viktor.hansen@epost.example', fra: '2026-01-01', til: '2026-12-31', sak: '31/25' },
+  { enhet: 'C-H0102', leietaker: 'Elise Brattli', kontakt: 'elise.brattli@epost.example', fra: '2026-04-01', til: '2027-03-31', sak: '11/26' }
+];
+const KORTTID = [
+  { enhet: 'C-H0302', opphold: [['2026-04-02', '2026-04-09'], ['2026-06-20', '2026-07-08'], ['2026-08-14', '2026-08-20']] },
+  { enhet: 'B-H0202', opphold: [['2026-02-13', '2026-02-16'], ['2026-05-15', '2026-05-25'], ['2026-07-01', '2026-07-12'], ['2026-09-04', '2026-09-07']] },
+  { enhet: 'A-H0103', opphold: [['2026-03-03', '2026-03-07'], ['2026-07-12', '2026-07-20'], ['2026-10-02', '2026-10-04']] },
+  { enhet: 'A-H0401', opphold: [['2026-10-23', '2026-10-29']] }
+];
+const nights = k => k.opphold.reduce((s, [a, b]) => s + Math.round((D(b) - D(a)) / 864e5), 0);
+LANGTID.forEach(l => unit(l.enhet).bruk = 'utleid');
+KORTTID.forEach(k => unit(k.enhet).bruk = 'korttid');
+const BRUK = { selv: 'Eier bor selv', utleid: 'Utleid med godkjenning', korttid: 'Korttidsutleie i 2026' };
+
+const BOARD = [
+  { enhet: 'C-H0301', rolle: 'Styreleder', ansvar: 'Møteledelse og leverandører', valgt: 2026, til: 2028 },
+  { enhet: 'A-H0402', rolle: 'Nestleder', ansvar: 'Ladeanlegg og parkering', valgt: 2025, til: 2027 },
+  { enhet: 'B-H0201', rolle: 'Styremedlem', ansvar: 'Økonomi og fakturering', valgt: 2026, til: 2028 },
+  { enhet: 'B-H0403', rolle: 'Styremedlem', ansvar: 'Vedlikehold og dugnad', valgt: 2025, til: 2027 },
+  { enhet: 'C-H0103', rolle: 'Varamedlem', ansvar: 'Velkomst av nye beboere', valgt: 2026, til: 2027 }
+];
+
+const CATS = { regler: 'Vedtekter og regler', gf: 'Generalforsamling', styre: 'Styremøter', avtaler: 'Avtaler', forsikring: 'Forsikring', fdv: 'FDV og vedlikehold', hms: 'Brannvern og HMS', okonomi: 'Økonomi', utleie: 'Utleie' };
+let docSeq = 0;
+const doc = (cat, title, date, size, pub) => ({ id: 'd' + (++docSeq), cat, title, date, size, pub });
+const DOCS = [
+  doc('regler', 'Vedtekter (vedtatt 2023)', '2023-06-07', '312 kB', true),
+  doc('regler', 'Husordensregler (revidert 2024)', '2024-05-30', '148 kB', true),
+  doc('regler', 'Regler for fellesrommet', '2022-09-01', '64 kB', true),
+  doc('regler', 'Parkeringsregler og ladeplasser', '2026-03-01', '92 kB', true),
+  doc('gf', 'Protokoll ordinær generalforsamling 2026', '2026-05-28', '420 kB', true),
+  doc('gf', 'Innkalling og saksdokumenter, generalforsamling 2026', '2026-05-08', '1,8 MB', true),
+  doc('gf', 'Protokoll ekstraordinær generalforsamling 2025', '2025-10-09', '210 kB', true),
+  doc('gf', 'Protokoll ordinær generalforsamling 2025', '2025-05-22', '398 kB', true),
+  doc('styre', 'Styremøte 7/2026, protokoll', '2026-10-15', '118 kB', false),
+  doc('styre', 'Styremøte 6/2026, protokoll', '2026-09-10', '96 kB', false),
+  doc('styre', 'Styremøte 5/2026, protokoll', '2026-06-18', '104 kB', false),
+  doc('styre', 'Styremøte 9/2025, protokoll', '2025-12-10', '99 kB', false),
+  doc('avtaler', 'Avtale om ladeanlegg', '2026-02-11', '540 kB', false),
+  doc('avtaler', 'Snøbrøyting og strøing 2026/27', '2026-10-01', '180 kB', false),
+  doc('avtaler', 'Vaktmester og renhold', '2024-01-01', '220 kB', false),
+  doc('avtaler', 'TV og bredbånd, rammeavtale', '2023-04-01', '310 kB', false),
+  doc('forsikring', 'Forsikringsbevis bygning 2026', '2026-01-01', '160 kB', true),
+  doc('forsikring', 'Skademelding vannlekkasje B-H0202', '2025-11-20', '2,1 MB', false),
+  doc('fdv', 'Tilstandsrapport og vedlikeholdsplan 2025 til 2035', '2025-03-12', '4,6 MB', true),
+  doc('fdv', 'FDV-dokumentasjon, balkongrehabilitering', '2024-09-30', '8,2 MB', false),
+  doc('fdv', 'Tegninger, fasade og plan (skannet)', '1987-03-01', '12 MB', true),
+  doc('hms', 'Internkontroll for brannvern og HMS', '2025-08-15', '640 kB', false),
+  doc('hms', 'Kontroll av lekeplass 2026', '2026-05-05', '210 kB', false),
+  doc('hms', 'Tilsynsrapport fra brannvesenet', '2024-09-18', '330 kB', false),
+  doc('okonomi', 'Årsregnskap og årsberetning 2025', '2026-04-20', '890 kB', true),
+  doc('okonomi', 'Revisjonsberetning 2025', '2026-04-24', '140 kB', true),
+  doc('okonomi', 'Budsjett 2026', '2025-12-10', '76 kB', false),
+  doc('okonomi', 'Lånedokumenter fellesgjeld', '2019-06-14', '1,2 MB', false),
+  doc('utleie', 'Godkjent utleie A-H0201', '2026-06-18', '38 kB', false),
+  doc('utleie', 'Godkjent utleie C-H0102', '2026-03-18', '36 kB', false),
+  doc('utleie', 'Godkjent utleie B-H0303', '2025-12-10', '37 kB', false)
+];
+const docByTitle = t => DOCS.find(d => d.title.startsWith(t));
+
+const QA = [
+  { k: ['hund', 'katt', 'dyr', 'husdyr'], q: 'Kan jeg ha hund i leiligheten?', a: 'Ja. Dyrehold er tillatt så lenge dyret ikke er til sjenanse for andre. Hunder skal være i bånd på fellesarealene, og eieren rydder etter dyret.', src: [['Husordensregler', 'punkt 6']], pub: true },
+  { k: ['ro ', 'støy', 'stille', 'bore', 'oppussing', 'natt'], q: 'Når skal det være ro i bygget?', a: 'Det skal være ro mellom kl. 23 og 07. Støyende arbeid som boring og banking er lov på hverdager kl. 08 til 20 og lørdager kl. 10 til 16, men ikke på søn- og helligdager.', src: [['Husordensregler', 'punkt 3']], pub: true },
+  { k: ['lade', 'elbil', 'ladestasjon', 'ladepunkt'], q: 'Hva er vedtatt om lading av elbil?', a: 'Den ekstraordinære generalforsamlingen 9. oktober 2025 vedtok et felles ladeanlegg med 18 ladepunkter. Brukerne betaler 350 kr i måneden per ladepunkt på felleskostnadsfakturaen. Styret signerte avtalen 11. februar 2026 (sak 07/26).', src: [['Protokoll ekstraordinær generalforsamling 2025', 'sak 2'], ['Avtale om ladeanlegg', 'punkt 4']], pub: true },
+  { k: ['vindu', 'vedlikehold', 'ansvar', 'balkong', 'bytte', 'betaler'], q: 'Hvem betaler for nye vinduer?', a: 'Borettslaget har ansvaret for å skifte ut vinduer. Andelseieren har ansvaret for innvendig vedlikehold, som maling av karmer og bytte av tetningslister. Vedlikeholdsplanen har utskifting av alle vinduer i 2029.', src: [['Vedtekter', 'punkt 5-2'], ['Tilstandsrapport og vedlikeholdsplan', 'tiltak 14']], pub: true },
+  { k: ['airbnb', 'korttid', 'leie ut', 'utleie', 'fremleie'], q: 'Kan jeg leie ut leiligheten på Airbnb?', a: RULES.korttidSvar, src: [['Vedtekter', 'punkt 4-3, som viser til burettslagslova § 5-4']], pub: true },
+  { k: ['dugnad'], q: 'Når er neste dugnad?', a: 'Vårdugnaden er søndag 25. april 2027 kl. 11 til 15. Høstdugnaden i år var 18. oktober.', src: [['Protokoll ordinær generalforsamling 2026', 'sak 7']], pub: true },
+  { k: ['budsjett', 'felleskostnad', 'øke', 'økning', '2027', 'dyrere'], q: 'Blir felleskostnadene høyere neste år?', a: 'Styret foreslår en økning på 3,9 % fra 1. januar 2027 i utkastet til budsjett (sak 26/26). Budsjettet fastsettes på styremøtet 10. desember.', src: [['Styremøte 7/2026', 'sak 26/26']], pub: false }
+];
+
+const EVENTS = [
+  { d: '2026-11-12', t: 'Styremøte 8/2026', c: 'mote', s: 'Fellesrommet i Kløverveien 2, kl. 19.00' },
+  { d: '2026-11-20', t: 'Frist for innspill til budsjett 2027', c: 'frist', s: 'Sak 26/26. Innspill sendes via portalen.' },
+  { d: '2026-12-01', t: 'Røykvarslerdagen', c: 'kontroll', s: 'Test røykvarslerne og bytt batteri. Batterier deles ut i postkassene (sak 27/26).' },
+  { d: '2026-12-10', t: 'Styremøte 9/2026: budsjett 2027 fastsettes', c: 'mote', s: 'Fellesrommet, kl. 19.00' },
+  { d: '2026-12-15', t: 'Fakturagrunnlag for januar sendes', c: 'frist', s: 'Ny sats fra 1. januar dersom budsjettet vedtas' },
+  { d: '2027-01-12', t: 'Kontroll av brannvarslingsanlegget', c: 'kontroll', s: 'Styret har ansvaret for anlegget og fellesarealene' },
+  { d: '2027-01-31', t: 'Tredjepartsopplysninger til Skatteetaten', c: 'frist', s: 'Hver andelseiers andel av inntekter, kostnader, formue og gjeld. Fristen kan ikke utsettes.', lov: true },
+  { d: '2027-02-16', t: 'Filterbytte i ventilasjonsanlegget', c: 'kontroll', s: 'Vaktmesteravtalen, punkt 3' },
+  { d: '2027-03-15', t: 'Årsregnskap 2026 til revisor', c: 'frist', s: 'Fra regnskapsfører' },
+  { d: '2027-04-25', t: 'Vårdugnad', c: 'mote', s: 'Kl. 11 til 15, med pizza i fellesrommet etterpå' },
+  { d: '2027-05-05', t: 'Årlig kontroll av lekeplassen', c: 'kontroll', s: 'Rapporten legges i arkivet' },
+  { d: '2027-05-10', t: 'Innkalling til generalforsamling sendes', c: 'frist', s: 'Minst 8 og høyst 20 dager før møtet. Årsregnskap og revisjonsberetning skal ligge ved.', lov: true },
+  { d: '2027-05-27', t: 'Ordinær generalforsamling 2027', c: 'mote', s: 'Valg av styre, årsregnskap og årsberetning' },
+  { d: '2027-06-10', t: 'Nytt styre meldes til Foretaksregisteret', c: 'frist', s: 'Samordnet registermelding i Altinn. Plikten har ingen fast frist, men bør gjøres rett etter valget.', lov: true },
+  { d: '2027-06-30', t: 'Siste frist for ordinær generalforsamling', c: 'frist', s: 'Skal holdes innen utgangen av juni', lov: true },
+  { d: '2027-07-31', t: 'Årsregnskapet sendes Regnskapsregisteret', c: 'frist', s: 'Fristen kan ikke forlenges, og forsinkelsesgebyret kan bli inntil 69 940 kr', lov: true },
+  { d: '2027-09-14', t: 'Gjennomgang av vedlikeholdsplanen', c: 'kontroll', s: 'Grunnlag for budsjettet for neste år' },
+  { d: '2027-09-28', t: 'Brannvernrunde og internkontroll', c: 'kontroll', s: 'Rømningsveier, slokkeutstyr og skilting' },
+  { d: '2027-10-17', t: 'Høstdugnad', c: 'mote', s: 'Kl. 11 til 15' }
+];
+const CATCOL = { frist: 'Frister og økonomi', mote: 'Møter og dugnad', kontroll: 'Kontroll og vedlikehold' };
+
+/* Regnskap: hele kroner. 2026 er prognose. */
+const YEARS = [2022, 2023, 2024, 2025, 2026];
+const INNT = {
+  'Felleskostnader': [2050000, 2150000, 2280000, 2390000, 2488000],
+  'Parkering og lading': [61200, 62400, 64800, 64800, 127800],
+  'Leie av fellesrom': [7200, 8400, 9000, 9600, 8400],
+  'Renteinntekter': [4100, 14800, 24600, 21300, 18200]
+};
+const KOST = {
+  'Renter på fellesgjeld': [380000, 610000, 760000, 720000, 660000],
+  'Kommunale avgifter': [255000, 270000, 288000, 302000, 318000],
+  'Vedlikehold og reparasjoner': [310000, 240000, 410000, 265000, 380000],
+  'Renhold og vaktmester': [140000, 146000, 152000, 158000, 164000],
+  'Forsikring': [128000, 138000, 149000, 158000, 170000],
+  'TV og bredbånd': [118000, 120000, 122000, 124000, 126000],
+  'Regnskap og revisjon': [96000, 99000, 104000, 108000, 112000],
+  'Strøm i fellesarealer': [120000, 98000, 82000, 79000, 84000],
+  'Styrehonorar': [45000, 45000, 50000, 55000, 55000],
+  'Drift av ladeanlegg': [0, 0, 0, 0, 41000],
+  'Andre driftskostnader': [52000, 61000, 58000, 66000, 62000]
+};
+const BF = { 'Felleskostnader': 1, 'Parkering og lading': .97, 'Leie av fellesrom': 1.2, 'Renteinntekter': .8, 'Renter på fellesgjeld': 1.05, 'Kommunale avgifter': .99, 'Vedlikehold og reparasjoner': 1.08, 'Renhold og vaktmester': 1, 'Forsikring': .98, 'TV og bredbånd': 1, 'Regnskap og revisjon': .97, 'Strøm i fellesarealer': 1.1, 'Styrehonorar': 1, 'Drift av ladeanlegg': 1.15, 'Andre driftskostnader': .92 };
+const budget = (k, v, yi) => Math.round(v * (yi % 2 === 0 ? BF[k] : 2 - BF[k]) / 1000) * 1000;
+const DISP = [780000, 788600, 572000, 572700, 593100];
+const GJELD = [17800000, 17400000, 16980000, 16530000, 16080000];
+const sumI = yi => Object.values(INNT).reduce((s, v) => s + v[yi], 0);
+const sumK = yi => Object.values(KOST).reduce((s, v) => s + v[yi], 0);
+
+/* ---------- Tilstand ---------- */
+const S = {
+  role: 'styret', view: 'oversikt', year: 2025, unitFilter: 'alle', unitQuery: '', docCat: 'alle', docQuery: '', docYear: 'alle', vedtakFilter: 'alle', invFilter: 'alle', selEvent: null, askLog: [], desemberKlar: false,
+  soknader: [
+    { id: 's1', enhet: 'A-H0302', type: 'Utleie av hele boligen', periode: '1. januar til 31. desember 2027', grunn: 'Midlertidig jobb i Bergen i ett år', leietaker: 'Kasper Ruud', kontakt: 'kasper.ruud@epost.example', mottatt: '2026-11-02', frist: '2026-12-02', status: 'til behandling', sjekk: ['Andelseier har bodd i boligen siste år', 'Grunn: midlertidig fravær for arbeid', 'Leietaker er en navngitt person'] },
+    { id: 's2', enhet: 'C-H0203', type: 'Utleie av hele boligen', periode: '1. januar til 30. juni 2027', grunn: 'Studieopphold i utlandet', leietaker: 'Jenny Aasen', kontakt: 'jenny.aasen@epost.example', mottatt: '2026-10-27', frist: '2026-11-27', status: 'til behandling', sjekk: ['Andelseier har bodd i boligen siste år', 'Grunn: midlertidig fravær for utdanning', 'Leietaker er en navngitt person'] }
+  ],
+  henv: [
+    { fra: 'Karoline Bakke', enhet: 'C-H0101', emne: 'Lekkasje fra taket i kjellerboden', dato: '2026-11-05', status: 'Ny' },
+    { fra: 'Mats Ødegård', enhet: 'B-H0402', emne: 'Støy fra leiligheten under etter kl. 23', dato: '2026-11-02', status: 'Under behandling' },
+    { fra: 'Ali Rahimi', enhet: 'A-H0303', emne: 'Er det ledige ladepunkter?', dato: '2026-10-29', status: 'Besvart' }
+  ],
+  vedtak: [
+    { sak: '28/26', dato: '2026-10-15', tittel: 'Avslag på søknad om innglassing av balkong i C-H0401', status: 'Utført', ansvar: 'C-H0301', note: 'Begrunnet i fasadeplanen' },
+    { sak: '27/26', dato: '2026-10-15', tittel: 'Batterier til røykvarslere kjøpes inn og deles ut før 1. desember', status: 'Under oppfølging', ansvar: 'B-H0403' },
+    { sak: '26/26', dato: '2026-10-15', tittel: 'Utkast til budsjett 2027 med 3,9 % økning i felleskostnadene', status: 'Under oppfølging', ansvar: 'B-H0201', note: 'Innspill innen 20. november' },
+    { sak: '24/26', dato: '2026-09-10', tittel: 'Skriftlig varsel til C-H0302 om korttidsutleie over 30 døgn', status: 'Under oppfølging', ansvar: 'C-H0301', note: 'Svar ventes innen 20. november' },
+    { sak: '22/26', dato: '2026-09-10', tittel: 'Ny avtale om snøbrøyting og strøing for vinteren 2026/27', status: 'Utført', ansvar: 'B-H0403' },
+    { sak: '19/26', dato: '2026-06-18', tittel: 'Godkjent utleie av A-H0201 til 31. juli 2027', status: 'Utført', ansvar: 'C-H0301' },
+    { sak: '14/26', dato: '2026-04-15', tittel: 'Tre tilbud på maling av oppgangene hentes inn', status: 'Under oppfølging', ansvar: 'B-H0403', note: 'To av tre tilbud mottatt' },
+    { sak: '11/26', dato: '2026-03-18', tittel: 'Godkjent utleie av C-H0102 til 31. mars 2027', status: 'Utført', ansvar: 'C-H0301' },
+    { sak: '07/26', dato: '2026-02-11', tittel: 'Avtale om felles ladeanlegg signeres', status: 'Utført', ansvar: 'A-H0402' },
+    { sak: '03/26', dato: '2026-01-14', tittel: 'Felleskostnadene økes med 4,5 % fra 1. april 2026', status: 'Utført', ansvar: 'B-H0201' },
+    { sak: '31/25', dato: '2025-12-10', tittel: 'Godkjent utleie av B-H0303 for 2026', status: 'Utført', ansvar: 'C-H0301' }
+  ]
+};
+const ME = 'A-H0302';
+
+const NAV_STYRE = [
+  { id: 'oversikt', label: 'Oversikt', icon: 'home' },
+  { id: 'enheter', label: 'Boenheter', icon: 'units' },
+  { id: 'utleie', label: 'Utleie', icon: 'key', count: () => S.soknader.filter(s => s.status === 'til behandling').length || '' },
+  { id: 'dokumenter', label: 'Dokumenter', icon: 'folder' },
+  { id: 'styret', label: 'Styret og vedtak', icon: 'people' },
+  { id: 'arshjul', label: 'Årshjul', icon: 'wheel' },
+  { id: 'faktura', label: 'Fakturering', icon: 'receipt', count: () => units.filter(u => u.bet !== 'betalt').length || '' },
+  { id: 'regnskap', label: 'Regnskap', icon: 'chart' }
+];
+const NAV_BEBOER = [
+  { id: 'minside', label: 'Min side', icon: 'me' },
+  { id: 'dokumenter', label: 'Dokumenter', icon: 'folder' },
+  { id: 'arshjul', label: 'Årshjul', icon: 'wheel' }
+];
+const HEAD = {
+  oversikt: ['Oversikt', 'Det styret bør vite i dag, sortert etter hva som haster.'],
+  enheter: ['Boenheter', '36 andeler i tre oppganger. Trykk på en leilighet for å se alt om den.'],
+  utleie: ['Utleie', 'Søknader, godkjente leieforhold og døgnregnskap for korttidsutleie.'],
+  dokumenter: ['Dokumenter', 'Hele arkivet på ett sted, og en assistent som svarer med kilde.'],
+  styret: ['Styret og vedtak', 'Hvem som sitter i styret, og alt styret har bestemt.'],
+  arshjul: ['Årshjul', 'Styreåret fra november 2026 til oktober 2027.'],
+  faktura: ['Fakturering', 'Felleskostnader og tillegg for november 2026.'],
+  regnskap: ['Regnskap', 'Økonomien år for år, med budsjett og avvik.'],
+  minside: ['Min side', 'A-H0302 i Kløverveien 2. Du er logget inn som Hanne Myrvold.']
+};
+
+/* ---------- Felles biter ---------- */
+const sevPill = s => s === 'crit' ? `<span class="pill crit">${ICON.alert}Haster</span>` : s === 'warn' ? `<span class="pill warn">${ICON.clock}Snart</span>` : `<span class="pill info">${ICON.info}Til orientering</span>`;
+const betPill = b => b === 'betalt' ? `<span class="pill good">${ICON.check}Betalt</span>` : b === 'ubetalt' ? `<span class="pill warn">${ICON.clock}Forfalt</span>` : `<span class="pill crit">${ICON.alert}2. purring</span>`;
+const brukPill = b => b === 'selv' ? `<span class="pill">Bor selv</span>` : b === 'utleid' ? `<span class="pill info">Utleid</span>` : `<span class="pill warn">Korttidsutleie</span>`;
+const statusPill = s => s === 'Utført' ? `<span class="pill good">${ICON.check}Utført</span>` : `<span class="pill warn">${ICON.clock}${s}</span>`;
+const henvPill = s => s === 'Ny' ? `<span class="pill crit">Ny</span>` : s === 'Besvart' ? `<span class="pill good">Besvart</span>` : `<span class="pill warn">Under behandling</span>`;
+const tile = (k, v, s, go, cls = '') => `<button class="tile ${cls}" data-action="nav" data-view="${go}"><span class="tile-k">${k}</span><span class="tile-v">${v}</span><span class="tile-s">${s}</span></button>`;
+const nameOf = enhet => unit(enhet).eier;
+
+function agendaItems(limitDays) {
+  const dyn = S.soknader.filter(s => s.status === 'til behandling').map(s => ({ d: s.frist, t: `Svarfrist for utleiesøknaden fra ${s.enhet}`, c: 'frist', s: RULES.svarfrist }));
+  return [...EVENTS, ...dyn].filter(e => daysTo(e.d) >= 0 && (limitDays == null || daysTo(e.d) <= limitDays)).sort((a, b) => D(a.d) - D(b.d));
+}
+
+function buildActions() {
+  const a = [];
+  KORTTID.forEach(k => {
+    const n = nights(k);
+    if (n > RULES.korttidGrense) a.push({ sev: 'crit', t: `${k.enhet} har ${n} døgn korttidsutleie i 2026`, s: `Grensen er ${RULES.korttidGrense} døgn. Varsel er sendt (sak 24/26), og svar ventes innen 20. november.`, go: 'utleie' });
+    else if (n >= RULES.korttidGrense - 5) a.push({ sev: 'warn', t: `${k.enhet} nærmer seg grensen for korttidsutleie`, s: `${n} av ${RULES.korttidGrense} døgn er brukt i år.`, go: 'utleie' });
+  });
+  units.filter(u => u.bet === 'purret').forEach(u => a.push({ sev: 'crit', t: `${u.id} skylder for oktober og november`, s: `${kr(u.belop * 2)} er utestående, og andre purring er sendt.`, go: 'faktura' }));
+  S.soknader.filter(s => s.status === 'til behandling').sort((x, y) => D(x.frist) - D(y.frist)).forEach(s => a.push({ sev: 'warn', t: `Utleiesøknaden fra ${s.enhet} må besvares`, s: `Svarfrist ${fdm(s.frist)}, om ${daysTo(s.frist)} dager. ${RULES.svarfrist}`, go: 'utleie' }));
+  S.henv.filter(h => h.status === 'Ny').forEach(h => a.push({ sev: 'warn', t: `Ny henvendelse: ${h.emne}`, s: `Fra ${h.fra} i ${h.enhet}, ${fdm(h.dato)}.`, go: 'henv' }));
+  LANGTID.forEach(l => { const d = daysTo(l.til); if (d >= 0 && d <= 60) a.push({ sev: 'info', t: `Leieavtalen i ${l.enhet} går ut ${fdm(l.til)}`, s: `Om ${d} dager. Andelseieren må søke på nytt hvis utleien skal fortsette.`, go: 'utleie' }); });
+  const o = { crit: 0, warn: 1, info: 2 };
+  return a.sort((x, y) => o[x.sev] - o[y.sev]);
+}
+
+/* ---------- Visninger ---------- */
+function vOversikt() {
+  const unpaid = units.filter(u => u.bet !== 'betalt');
+  const utest = unpaid.reduce((s, u) => s + u.belop * (u.bet === 'purret' ? 2 : 1), 0);
+  const pend = S.soknader.filter(s => s.status === 'til behandling');
+  const openH = S.henv.filter(h => h.status !== 'Besvart');
+  const next = agendaItems()[0];
+  const acts = buildActions();
+  const ag = agendaItems(30);
+  const innbetalt = 3 * Math.round(209622 / 1.045) + 8 * 209622 - (utest - units.find(u => u.bet === 'purret').belop);
+  return `
+  <div class="tiles">
+    ${tile('Neste i årshjulet', esc(next.t), `${fdm(next.d)}, om ${daysTo(next.d)} dager`, 'arshjul')}
+    ${tile('Utestående', kr(utest), `${unpaid.length} enheter, én har fått andre purring`, 'faktura', 'crit')}
+    ${tile('Til behandling', `${pend.length + openH.length} saker`, `${pend.length} utleiesøknader og ${openH.length} henvendelser`, 'utleie', pend.length + openH.length ? 'warn' : '')}
+    ${tile('Disponible midler', kr(DISP[4]), 'Prognose per 31. desember 2026', 'regnskap')}
+  </div>
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Krever handling</h2><p class="sub">${acts.length} punkter, det som haster først</p></div></div>
+      <ol class="actions">${acts.map(x => `<li class="act">${sevPill(x.sev)}<span class="act-t">${esc(x.t)}</span><span class="act-s">${esc(x.s)}</span>${x.go === 'henv' ? `<button class="link" data-action="scroll" data-target="henv">Se henvendelsen</button>` : `<button class="link" data-action="nav" data-view="${x.go}">Åpne</button>`}</li>`).join('') || '<li class="empty">Ingenting haster nå.</li>'}</ol>
+    </section>
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Neste 30 dager</h2><p class="sub">Fra årshjulet og søknadene</p></div></div>
+      <ul class="agenda">${ag.map(e => `<li class="ag"><div class="ag-d"><b>${D(e.d).getDate()}</b><span>${D(e.d).toLocaleDateString('nb-NO', { month: 'short' }).replace('.', '')}</span></div><div><div class="ag-t"><span class="dotc c-${e.c}"></span>${esc(e.t)}</div><div class="ag-s">${esc(e.s || '')}</div></div></li>`).join('')}</ul>
+      <button class="link" data-action="nav" data-view="arshjul">Se hele årshjulet</button>
+    </section>
+  </div>
+  <div class="grid-3">
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Siste vedtak</h2><button class="link" data-action="nav" data-view="styret">Vedtaksregisteret</button></div>
+      <ul class="mini-list">${S.vedtak.slice(0, 4).map(v => `<li><div class="mini-top"><span class="mini-title">Sak ${v.sak}</span><span class="mini-meta">${fd(v.dato, { day: 'numeric', month: 'short' })}</span></div><div>${esc(v.tittel)}</div></li>`).join('')}</ul>
+    </section>
+    <section class="card" id="henv">
+      <div class="card-head"><h2 class="h2">Henvendelser fra beboere</h2></div>
+      <ul class="mini-list">${S.henv.map(h => `<li><div class="mini-top"><span class="mini-title">${esc(h.emne)}</span>${henvPill(h.status)}</div><div class="mini-meta">${esc(h.fra)}, ${h.enhet}, ${fd(h.dato, { day: 'numeric', month: 'short' })}</div></li>`).join('')}</ul>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Felleskostnader 2026</h2><button class="link" data-action="nav" data-view="regnskap">Regnskapet</button></div>
+      <div class="bigline">${kr(innbetalt)}</div>
+      <div class="mini-meta">innbetalt hittil av ${kr(INNT['Felleskostnader'][4])} for hele året</div>
+      <div class="progress" role="img" aria-label="${pct(innbetalt / INNT['Felleskostnader'][4], 0)} innbetalt"><span style="width:${(innbetalt / INNT['Felleskostnader'][4] * 100).toFixed(1)}%"></span></div>
+      <div class="mini-meta">Desember gjenstår. Prognosen gir et årsresultat på ${kr(sumI(4) - sumK(4))}.</div>
+    </section>
+  </div>`;
+}
+
+function vEnheter() {
+  const f = S.unitFilter;
+  const counts = { selv: 0, utleid: 0, korttid: 0 };
+  units.forEach(u => counts[u.bruk]++);
+  return `
+  <div class="tiles">
+    ${tile('Andeler', '36', `${nf(units.reduce((s, u) => s + u.size, 0))} m² i tre oppganger`, 'enheter')}
+    ${tile('Utleid med godkjenning', String(counts.utleid), `${S.soknader.filter(s => s.status === 'til behandling').length} nye søknader til behandling`, 'utleie')}
+    ${tile('Korttidsutleie i 2026', String(counts.korttid), 'Én enhet er over grensen', 'utleie', 'warn')}
+    ${tile('Utestående betaling', String(units.filter(u => u.bet !== 'betalt').length), 'Markert med rød prikk', 'faktura', 'crit')}
+  </div>
+  <section class="card">
+    <div class="card-head">
+      <div class="chips" role="group" aria-label="Velg oppgang">${['alle', 'A', 'B', 'C'].map(v => `<button class="chip" data-action="ufilter" data-v="${v}" aria-pressed="${f === v}">${v === 'alle' ? 'Alle oppganger' : 'Oppgang ' + v}</button>`).join('')}</div>
+      <div class="legend"><span><span class="sw"></span>Eier bor selv</span><span><span class="sw" style="background:var(--s1);border-color:var(--s1)"></span>Utleid med godkjenning</span><span><span class="sw" style="background:var(--s2);border-color:var(--s2)"></span>Korttidsutleie i 2026</span><span><span class="sw round" style="background:var(--crit);border-color:var(--crit)"></span>Utestående betaling</span></div>
+    </div>
+    <div class="facades">${OPP.filter(o => f === 'alle' || o.k === f).map(facade).join('')}</div>
+  </section>
+  <section class="card">
+    <div class="card-head"><h2 class="h2">Beboerregister</h2><input id="unitSearch" class="search" type="search" placeholder="Søk på navn, enhet eller e-post" value="${esc(S.unitQuery)}" aria-label="Søk i beboerregisteret"></div>
+    <div class="tbl" id="unitTable">${unitTable()}</div>
+  </section>`;
+}
+function facade(o) {
+  const us = units.filter(u => u.opp === o.k);
+  const rows = [4, 3, 2, 1].map(fl => us.filter(u => u.floor === fl).map(u => `<button class="win win-${u.bruk}" data-action="unit" data-id="${u.id}" data-tip="${esc(`${u.id}: ${u.eier}. ${BRUK[u.bruk]}${u.bet !== 'betalt' ? '. Utestående betaling' : ''}`)}" aria-label="${esc(`${u.id}, ${u.eier}, ${BRUK[u.bruk]}`)}">${u.bnr}${u.bet !== 'betalt' ? '<span class="win-dot" aria-hidden="true"></span>' : ''}</button>`).join('')).join('');
+  return `<div class="facade"><div class="roof"></div><div class="floors">${rows}</div><div class="door-row"><span class="door"></span></div><div class="facade-label">Oppgang ${o.k} <span class="muted">${o.adr}</span></div></div>`;
+}
+function unitTable() {
+  const q = S.unitQuery.trim().toLowerCase();
+  const rows = units.filter(u => (S.unitFilter === 'alle' || u.opp === S.unitFilter) && (!q || `${u.id} ${u.eier} ${u.epost} ${u.andel}`.toLowerCase().includes(q)));
+  if (!rows.length) return `<p class="empty">Ingen treff på «${esc(S.unitQuery)}».</p>`;
+  return `<table><thead><tr><th>Enhet</th><th class="r">Andel</th><th class="r">m²</th><th>Andelseier</th><th>E-post</th><th>Bruk</th><th class="r">Felleskostnad</th><th>November</th></tr></thead><tbody>
+  ${rows.map(u => `<tr class="click" data-action="unit" data-id="${u.id}"><td class="mono nowrap">${u.id}</td><td class="r">${u.andel}</td><td class="r">${u.size}</td><td class="nowrap">${esc(u.eier)}</td><td class="muted">${u.epost}</td><td>${brukPill(u.bruk)}</td><td class="r nowrap">${kr(u.fk)}</td><td>${betPill(u.bet)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+function vUtleie() {
+  const pend = S.soknader;
+  return `
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Søknader om utleie</h2><p class="sub">${RULES.svarfrist} Det følger av burettslagslova § 5-7.</p></div></div>
+    ${pend.map(s => {
+      const u = unit(s.enhet); const d = daysTo(s.frist);
+      return `<div class="req">
+        <div class="req-head"><div><span class="mono">${s.enhet}</span> <b>${esc(u.eier)}</b></div>${s.status === 'til behandling' ? `<span class="pill ${d <= 21 ? 'crit' : 'warn'}">${ICON.clock}Svarfrist ${fdm(s.frist)}, om ${d} dager</span>` : s.status === 'godkjent' ? `<span class="pill good">${ICON.check}Godkjent i sak ${s.sak}</span>` : `<span class="pill crit">Avslått i sak ${s.sak}</span>`}</div>
+        <dl class="kv"><dt>Gjelder</dt><dd>${s.type}, ${s.periode}</dd><dt>Grunn</dt><dd>${esc(s.grunn)}</dd><dt>Leietaker</dt><dd>${esc(s.leietaker)}, ${s.kontakt}</dd><dt>Mottatt</dt><dd>${fd(s.mottatt)}</dd></dl>
+        <div class="checks">${s.sjekk.map(c => `<span class="pill good">${ICON.check}${esc(c)}</span>`).join('')}</div>
+        ${s.status === 'til behandling' ? `<div class="req-actions"><button class="btn primary" data-action="approve" data-id="${s.id}">${ICON.check}Godkjenn og lag vedtak</button><button class="btn" data-action="reject" data-id="${s.id}">Avslå</button></div>` : ''}
+      </div>`;
+    }).join('')}
+  </section>
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Utleid med godkjenning</h2><p class="sub">Leietakerne er registrert med kontaktinformasjon, og avtalen er knyttet til vedtaket.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Enhet</th><th>Andelseier</th><th>Leietaker</th><th>Kontakt</th><th>Periode</th><th>Vedtak</th><th>Status</th></tr></thead><tbody>
+    ${LANGTID.map(l => { const d = daysTo(l.til); return `<tr class="click" data-action="unit" data-id="${l.enhet}"><td class="mono nowrap">${l.enhet}</td><td class="nowrap">${esc(nameOf(l.enhet))}</td><td class="nowrap">${esc(l.leietaker)}</td><td class="muted">${l.kontakt}</td><td class="nowrap num">${fd(l.fra, { day: 'numeric', month: 'numeric', year: 'numeric' })} til ${fd(l.til, { day: 'numeric', month: 'numeric', year: 'numeric' })}</td><td class="nowrap">Sak ${l.sak}</td><td>${d < 0 ? '<span class="pill">Avsluttet</span>' : d <= 60 ? `<span class="pill warn">${ICON.clock}Går ut om ${d} dager</span>` : `<span class="pill good">Løper</span>`}</td></tr>`; }).join('')}
+    </tbody></table></div>
+  </section>
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Korttidsutleie i 2026</h2><p class="sub">Døgn per enhet, registrert av andelseierne. Den loddrette streken er grensen på ${RULES.korttidGrense} døgn.</p></div></div>
+    <div class="grid-2" style="gap:24px">
+      <div>${KORTTID.slice().sort((a, b) => nights(b) - nights(a)).map(k => {
+        const n = nights(k); const scale = 36; const over = n > RULES.korttidGrense;
+        return `<div class="meter-row"><div><div class="mono">${k.enhet}</div><div class="mini-meta">${esc(nameOf(k.enhet))}</div></div><div class="meter-wrap"><div class="meter" data-tip="${esc(k.opphold.map(([a, b]) => `${fdm(a)} til ${fdm(b)}`).join(', '))}"><div class="meter-f${over ? ' over' : ''}" style="width:${(Math.min(n, scale) / scale * 100).toFixed(1)}%"></div><div class="meter-lim" style="left:${(RULES.korttidGrense / scale * 100).toFixed(1)}%"></div></div><div class="meter-cap">${k.opphold.length} opphold</div></div><div style="text-align:right">${over ? `<span class="pill crit">${ICON.alert}${n} døgn</span>` : n >= RULES.korttidGrense - 5 ? `<span class="pill warn">${n} døgn</span>` : `<span class="pill">${n} døgn</span>`}</div></div>`;
+      }).join('')}</div>
+      <div class="rules"><b>Slik er reglene</b><p>${RULES.korttidTekst}</p><p>${RULES.korttidSameie}</p><p>Tun teller døgnene for hver enhet og varsler styret og andelseieren før grensen nås. C-H0302 passerte grensen 20. august, og styret sendte varsel i sak 24/26.</p></div>
+    </div>
+  </section>`;
+}
+
+function vDokumenter() {
+  const pub = S.role === 'beboer';
+  const pool = DOCS.filter(d => !pub || d.pub);
+  const cats = Object.keys(CATS).filter(c => pool.some(d => d.cat === c));
+  const years = [...new Set(pool.map(d => d.date.slice(0, 4)))].sort().reverse();
+  return `
+  <div class="docs">
+    <section class="card">
+      <div class="card-head">
+        <input id="docSearch" class="search" type="search" placeholder="Søk i ${pool.length} dokumenter" value="${esc(S.docQuery)}" aria-label="Søk i dokumentene">
+        <select id="docYear" class="search" aria-label="Velg år"><option value="alle">Alle år</option>${years.map(y => `<option ${S.docYear === y ? 'selected' : ''}>${y}</option>`).join('')}</select>
+      </div>
+      <div class="chips" role="group" aria-label="Kategori" style="margin-bottom:12px">
+        <button class="chip" data-action="dcat" data-v="alle" aria-pressed="${S.docCat === 'alle'}">Alle<span class="n">${pool.length}</span></button>
+        ${cats.map(c => `<button class="chip" data-action="dcat" data-v="${c}" aria-pressed="${S.docCat === c}">${CATS[c]}<span class="n">${pool.filter(d => d.cat === c).length}</span></button>`).join('')}
+      </div>
+      <div id="docList">${docList()}</div>
+      ${pub ? '<p class="fine">Som beboer ser du dokumentene styret har gjort tilgjengelige for alle. Styremøteprotokoller og avtaler ser bare styret.</p>' : ''}
+    </section>
+    <aside class="card ask" id="ask">${askPanel()}</aside>
+  </div>`;
+}
+function docList() {
+  const pub = S.role === 'beboer'; const q = S.docQuery.trim().toLowerCase();
+  const rows = DOCS.filter(d => (!pub || d.pub) && (S.docCat === 'alle' || d.cat === S.docCat) && (S.docYear === 'alle' || d.date.startsWith(S.docYear)) && (!q || (d.title + ' ' + CATS[d.cat]).toLowerCase().includes(q))).sort((a, b) => b.date.localeCompare(a.date));
+  if (!rows.length) return `<p class="empty">Ingen dokumenter passer søket.</p>`;
+  return `<ul class="doclist">${rows.map(d => `<li class="doc" data-action="doc" data-id="${d.id}" tabindex="0" role="button">${ICON.doc}<div><div class="doc-t">${esc(d.title)}</div><div class="doc-m">${CATS[d.cat]} · ${fd(d.date)} · ${d.size}</div></div>${S.role === 'styret' ? (d.pub ? '<span class="pill accent">Alle beboere</span>' : '<span class="pill">Bare styret</span>') : ''}</li>`).join('')}</ul>`;
+}
+function askPanel() {
+  const sugg = QA.filter(x => S.role === 'styret' || x.pub).slice(0, 6);
+  return `<div class="ask-head">${ICON.ask}<div><h2 class="h2">Spør arkivet</h2><p class="sub">Svarene hentes fra dokumentene, med kilde.</p></div></div>
+  <div class="sugg">${sugg.map(x => `<button data-action="ask" data-q="${esc(x.q)}">${esc(x.q)}</button>`).join('')}</div>
+  <div class="log" id="askLog">${askLog()}</div>
+  <form id="askForm"><input id="askInput" placeholder="Skriv et spørsmål" aria-label="Spørsmål til arkivet" autocomplete="off"><button class="btn primary" type="submit">Spør</button></form>
+  <p class="fine">I demoen svarer assistenten på eksempelspørsmålene. I produktet leser den hele arkivet.</p>`;
+}
+function askLog() {
+  return S.askLog.map(x => `<div class="q">${esc(x.q)}</div><div class="a"><p>${esc(x.a)}</p>${x.src.length ? `<div class="srcs">${x.src.map(([t, p]) => { const d = docByTitle(t); return d && (S.role === 'styret' || d.pub) ? `<button class="src" data-action="doc" data-id="${d.id}">${esc(d.title)}, ${esc(p)}</button>` : `<span class="src">${esc(t)}, ${esc(p)}</span>`; }).join('')}</div>` : ''}</div>`).join('');
+}
+function ask(q) {
+  q = (q || '').trim(); if (!q) return;
+  const l = ' ' + q.toLowerCase() + ' ';
+  let best = null, score = 0;
+  QA.forEach(x => { const s = x.k.filter(k => l.includes(k)).length + (x.q.toLowerCase() === q.toLowerCase() ? 5 : 0); if (s > score) { score = s; best = x; } });
+  let ans;
+  if (!best) ans = { a: 'Det spørsmålet har ikke demoen et svar på. I produktet leser assistenten hele arkivet og viser kilden for hvert svar.', src: [] };
+  else if (S.role === 'beboer' && !best.pub) ans = { a: 'Svaret ligger i styrets egne dokumenter. Send gjerne en melding til styret, så svarer de deg.', src: [] };
+  else ans = best;
+  S.askLog.push({ q, a: ans.a, src: ans.src });
+  const log = $('askLog'); if (log) { log.innerHTML = askLog(); log.scrollTop = log.scrollHeight; }
+}
+
+function vStyret() {
+  const f = S.vedtakFilter;
+  const list = S.vedtak.filter(v => f === 'alle' || v.status === f);
+  return `
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Styret 2026 til 2027</h2><p class="sub">Valgt på generalforsamlingen 28. mai 2026. Endringer meldes til Foretaksregisteret.</p></div></div>
+    <div class="board">${BOARD.map(b => { const u = unit(b.enhet); return `<div class="person"><div class="person-top"><span class="avatar">${initials(u.eier)}</span><div><div class="person-name">${esc(u.eier)}</div><span class="pill ${b.rolle === 'Styreleder' ? 'accent' : ''}">${b.rolle}</span></div></div><div class="person-c"><span>${u.epost}</span><span class="num">${u.tlf}</span><span class="muted">${b.enhet} · valgt ${b.valgt}, på valg ${b.til}</span></div><div class="mini-meta">Ansvar: ${esc(b.ansvar)}</div></div>`; }).join('')}</div>
+  </section>
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Vedtaksregister</h2><p class="sub">Hvert vedtak har saksnummer, ansvarlig og lenke til protokollen.</p></div>
+        <div class="chips" role="group" aria-label="Filtrer vedtak">${[['alle', 'Alle'], ['Under oppfølging', 'Under oppfølging'], ['Utført', 'Utført']].map(([v, l]) => `<button class="chip" data-action="vfilter" data-v="${v}" aria-pressed="${f === v}">${l}<span class="n">${v === 'alle' ? S.vedtak.length : S.vedtak.filter(x => x.status === v).length}</span></button>`).join('')}</div></div>
+      <div class="tbl"><table><thead><tr><th>Sak</th><th>Dato</th><th>Vedtak</th><th>Ansvarlig</th><th>Status</th></tr></thead><tbody>
+      ${list.map(v => `<tr class="${v.ny ? 'new-row' : ''}"><td class="mono nowrap">${v.sak}</td><td class="nowrap num">${fd(v.dato, { day: 'numeric', month: 'numeric', year: 'numeric' })}</td><td>${esc(v.tittel)}${v.note ? `<div class="mini-meta">${esc(v.note)}</div>` : ''}</td><td class="nowrap">${esc(nameOf(v.ansvar))}</td><td>${statusPill(v.status)}</td></tr>`).join('')}
+      </tbody></table></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Neste styremøte</h2><p class="sub">Styremøte 8/2026, torsdag 12. november kl. 19.00 i fellesrommet</p></div></div>
+      <ol class="mini-list" style="padding-left:0">
+        ${S.soknader.filter(s => s.status === 'til behandling').map(s => `<li><span class="mini-title">Utleiesøknad fra ${s.enhet}</span><span class="mini-meta">Svarfrist ${fdm(s.frist)}</span></li>`).join('')}
+        <li><span class="mini-title">Innspill til budsjett 2027</span><span class="mini-meta">Sak 26/26, frist 20. november</span></li>
+        <li><span class="mini-title">Henvendelse om støy i B, 3. etasje</span><span class="mini-meta">Fra Mats Ødegård</span></li>
+        <li><span class="mini-title">Tilbud på maling av oppgangene</span><span class="mini-meta">Sak 14/26, to av tre tilbud mottatt</span></li>
+        <li><span class="mini-title">Svar fra C-H0302 om korttidsutleie</span><span class="mini-meta">Sak 24/26</span></li>
+      </ol>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-action="toast" data-msg="I produktet sendes innkallingen med sakslisten til styret på e-post. I demoen sendes ingenting.">${ICON.send}Send innkalling</button><button class="btn" data-action="toast" data-msg="I produktet lages et protokollutkast fra sakslisten, klart til å fylles ut i møtet.">Lag protokollutkast</button></div>
+    </section>
+  </div>`;
+}
+
+function vArshjul() {
+  const ev = agendaItems().filter(e => D(e.d) < new Date(2027, 10, 1));
+  const months = {};
+  ev.forEach((e, i) => { const k = e.d.slice(0, 7); (months[k] = months[k] || []).push([e, i]); });
+  return `
+  <div class="wheel-wrap">
+    <div style="display:grid;gap:20px;align-content:start">
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Styreåret</h2><div class="legend">${Object.entries(CATCOL).map(([k, v]) => `<span><span class="dotc c-${k}"></span>${v}</span>`).join('')}</div></div>
+      ${wheel(ev)}
+      <p class="fine" style="margin-top:8px">Den gule streken er i dag. Trykk på en prikk for å se hendelsen i listen.</p>
+    </section>
+    ${pliktCard()}
+    </div>
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Alle hendelser</h2><p class="sub">${ev.length} hendelser, ${ev.filter(e => e.lov).length} av dem lovpålagte frister</p></div><button class="btn" data-action="toast" data-msg="I produktet kan årshjulet abonneres på som kalender, og hver beboer får dugnad og generalforsamling i sin egen kalender.">${ICON.wheel}Legg i kalenderen</button></div>
+      ${Object.entries(months).map(([k, arr]) => `<div class="month-block"><div class="month-h">${D(k + '-01').toLocaleDateString('nb-NO', { month: 'long', year: 'numeric' })}</div>${arr.map(([e, i]) => `<div class="ev${S.selEvent === i ? ' is-sel' : ''}" id="ev${i}"><div class="ev-d">${fd(e.d, { day: 'numeric', month: 'short' })}</div><div><div class="ev-t"><span class="dotc c-${e.c}"></span>${esc(e.t)}</div>${e.s ? `<div class="ev-s">${esc(e.s)}</div>` : ''}</div>${e.lov ? '<span class="pill info">Lovpålagt</span>' : ''}</div>`).join('')}</div>`).join('')}
+    </section>
+  </div>`;
+}
+const PLIKT_SUB = 'Tun leser dette ut fra organisasjonsformen. For et sameie ser listen annerledes ut.';
+const PLIKTER = [
+  { t: 'Ordinær generalforsamling innen utgangen av juni', s: 'Gjelder alle borettslag (burettslagslova § 7-4)', on: true },
+  { t: 'Registrering i Foretaksregisteret', s: 'Gjelder alle borettslag', on: true },
+  { t: 'Tredjepartsopplysninger til Skatteetaten innen 31. januar', s: 'Gjelder alle borettslag', on: true },
+  { t: 'Årsregnskap til Regnskapsregisteret innen 31. juli', s: 'Gjelder alle borettslag', on: true },
+  { t: 'Revisor', s: 'Gjelder alle borettslag', on: true, onLabel: 'Påkrevd' },
+  { t: 'Svar på søknad om utleie', s: 'Ellers regnes leietakeren som godkjent (§ 5-7)', val: 'Innen én måned' },
+  { t: 'Korttidsutleie uten godkjenning', s: 'Når andelseieren selv bor i boligen (§ 5-4)', val: '30 døgn i året' }
+];
+function pliktCard() {
+  return `<section class="card"><div class="card-head"><div><h2 class="h2">Pliktene som gjelder dere</h2><p class="sub">${PLIKT_SUB}</p></div></div><div class="plikter">${PLIKTER.map(p => `<div class="plikt"><span class="plikt-t">${p.t}</span>${p.val ? `<span class="pill info">${p.val}</span>` : p.on ? `<span class="pill good">${ICON.check}${p.onLabel || 'Gjelder'}</span>` : `<span class="pill">${p.offLabel || 'Gjelder ikke'}</span>`}<span class="plikt-s">${p.s.replace(/§ /g, "§\u00a0")}</span></div>`).join('')}</div></section>`;
+}
+function arc(cx, cy, r0, r1, a0, a1) {
+  const p = (r, a) => `${(cx + r * Math.cos(a * Math.PI / 180)).toFixed(2)} ${(cy + r * Math.sin(a * Math.PI / 180)).toFixed(2)}`;
+  return `M${p(r1, a0)} A${r1} ${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0} ${r0} 0 0 0 ${p(r0, a0)} Z`;
+}
+function wheel(ev) {
+  const cx = 200, cy = 200, R0 = 138, R1 = 180;
+  const MN = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'];
+  let s = '';
+  for (let m = 0; m < 12; m++) {
+    const a0 = m * 30 - 90, a1 = (m + 1) * 30 - 90, am = (a0 + a1) / 2 * Math.PI / 180, rm = (R0 + R1) / 2;
+    s += `<path d="${arc(cx, cy, R0, R1, a0 + .7, a1 - .7)}" class="wseg${m === TODAY.getMonth() ? ' is-now' : ''}"/>`;
+    s += `<text x="${(cx + Math.cos(am) * rm).toFixed(1)}" y="${(cy + Math.sin(am) * rm).toFixed(1)}" class="wlab" text-anchor="middle" dominant-baseline="central">${MN[m]}</text>`;
+  }
+  const frac = d => { const dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); return (d.getMonth() + (d.getDate() - .5) / dim) / 12; };
+  const ta = (frac(TODAY) * 360 - 90) * Math.PI / 180;
+  s += `<line x1="${(cx + Math.cos(ta) * 66).toFixed(1)}" y1="${(cy + Math.sin(ta) * 66).toFixed(1)}" x2="${(cx + Math.cos(ta) * (R1 + 8)).toFixed(1)}" y2="${(cy + Math.sin(ta) * (R1 + 8)).toFixed(1)}" class="wneedle"/>`;
+  const placed = [];
+  ev.forEach((e, i) => {
+    const ang = frac(D(e.d)) * 360 - 90;
+    let r = 120; while (placed.some(p => Math.abs(p.ang - ang) < 6.5 && p.r === r)) r -= 17;
+    placed.push({ ang, r });
+    const rad = ang * Math.PI / 180;
+    s += `<circle cx="${(cx + Math.cos(rad) * r).toFixed(1)}" cy="${(cy + Math.sin(rad) * r).toFixed(1)}" r="7.5" class="wdot c-${e.c}${S.selEvent === i ? ' is-sel' : ''}" data-action="wheel" data-i="${i}" tabindex="0" role="button" aria-label="${esc(fdm(e.d) + ': ' + e.t)}" data-tip="${esc(fdm(e.d) + ': ' + e.t)}"/>`;
+  });
+  const nx = ev[0];
+  s += `<text x="${cx}" y="${cy - 26}" class="wc1" text-anchor="middle">I dag</text><text x="${cx}" y="${cy + 2}" class="wc2" text-anchor="middle">${fdm(iso(TODAY))}</text><text x="${cx}" y="${cy + 26}" class="wc3" text-anchor="middle">Neste om ${daysTo(nx.d)} dager</text>`;
+  return `<svg viewBox="0 0 400 400" class="wheel" role="img" aria-label="Årshjul med ${ev.length} hendelser">${s}</svg>`;
+}
+
+function vFaktura() {
+  const fakturert = units.reduce((s, u) => s + u.belop, 0);
+  const unpaid = units.filter(u => u.bet !== 'betalt');
+  const utestNov = unpaid.reduce((s, u) => s + u.belop, 0);
+  const lade = units.filter(u => u.lade).length, park = units.filter(u => u.park).length;
+  const rows = units.filter(u => S.invFilter === 'alle' || u.bet !== 'betalt');
+  return `
+  <div class="tiles">
+    ${tile('Fakturert november', kr(fakturert), '36 fakturaer, forfall 1. november', 'faktura')}
+    ${tile('Innbetalt', kr(fakturert - utestNov), `${36 - unpaid.length} av 36 betalt`, 'faktura')}
+    ${tile('Forfalt og ubetalt', kr(utestNov + unit('B-H0103').belop), `${unpaid.length} enheter, inkludert oktober for B-H0103`, 'faktura', 'crit')}
+    ${tile('Neste fakturarunde', S.desemberKlar ? 'Klar' : '15. november', S.desemberKlar ? 'Desember sendes 15. november' : 'Desember, forfall 1. desember', 'faktura', S.desemberKlar ? '' : 'warn')}
+  </div>
+  <div class="grid-2">
+    <section class="card">
+      <div class="card-head"><div><h2 class="h2">Fakturaer for november</h2><p class="sub">KID med kontrollsiffer (MOD10), sendt som eFaktura eller e-post.</p></div>
+        <div class="chips" role="group">${[['alle', 'Alle'], ['ubetalt', 'Ubetalte']].map(([v, l]) => `<button class="chip" data-action="ifilter" data-v="${v}" aria-pressed="${S.invFilter === v}">${l}</button>`).join('')}</div></div>
+      <div class="tbl"><table><thead><tr><th>Faktura</th><th>Enhet</th><th>Andelseier</th><th>KID</th><th class="r">Beløp</th><th>Status</th></tr></thead><tbody>
+      ${rows.map(u => `<tr class="click" data-action="unit" data-id="${u.id}"><td class="mono nowrap">2026-11-${String(u.andel).padStart(3, '0')}</td><td class="mono nowrap">${u.id}</td><td class="nowrap">${esc(u.eier)}</td><td class="mono">${kid(u.andel, '2611')}</td><td class="r nowrap">${kr(u.belop)}</td><td>${betPill(u.bet)}</td></tr>`).join('')}
+      </tbody></table></div>
+    </section>
+    <div style="display:grid;gap:20px;align-content:start">
+      <section class="card">
+        <div class="card-head"><h2 class="h2">Slik er fakturaen satt sammen</h2></div>
+        <div class="tbl"><table><tbody>
+          <tr><td>Felleskostnader, ${FK_RATE.toFixed(1).replace('.', ',')} kr per m²</td><td class="r">36</td><td class="r nowrap">${kr(units.reduce((s, u) => s + u.fk, 0))}</td></tr>
+          <tr><td>Ladepunkt, 350 kr</td><td class="r">${lade}</td><td class="r nowrap">${kr(lade * 350)}</td></tr>
+          <tr><td>Parkeringsplass, 450 kr</td><td class="r">${park}</td><td class="r nowrap">${kr(park * 450)}</td></tr>
+          <tr class="sum"><td>Sum november</td><td></td><td class="r nowrap">${kr(fakturert)}</td></tr>
+        </tbody></table></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2 class="h2">Neste steg</h2></div>
+        <div style="display:grid;gap:10px">
+          <button class="btn primary" data-action="desember">${ICON.check}${S.desemberKlar ? 'Desember er klargjort' : 'Klargjør desember'}</button>
+          <button class="btn" data-action="toast" data-msg="I produktet sendes purringen til de to forfalte enhetene med ny forfallsdato. I demoen sendes ingenting.">Send purring til ${units.filter(u => u.bet === 'ubetalt').length} forfalte</button>
+          <button class="btn" data-action="toast" data-msg="I produktet overføres saken til inkassobyrået du har avtale med. Styret godkjenner før noe sendes.">Vurder inkasso for B-H0103</button>
+        </div>
+      </section>
+    </div>
+  </div>`;
+}
+function luhn(num) { let sum = 0, dbl = true; for (let i = num.length - 1; i >= 0; i--) { let d = +num[i]; if (dbl) { d *= 2; if (d > 9) d -= 9; } sum += d; dbl = !dbl; } return (10 - sum % 10) % 10; }
+const kid = (andel, ym) => { const b = '4417' + String(andel).padStart(3, '0') + ym; return b + luhn(b); };
+
+function vRegnskap() {
+  const yi = YEARS.indexOf(S.year), prog = S.year === 2026;
+  const inn = sumI(yi), kos = sumK(yi), res = inn - kos;
+  const delta = (a, b) => b ? `${a >= b ? '+' : ''}${pct((a - b) / b)} fra ${YEARS[yi - 1]}` : 'Første år i oversikten';
+  const prev = yi > 0 ? [sumI(yi - 1), sumK(yi - 1), sumI(yi - 1) - sumK(yi - 1), DISP[yi - 1], GJELD[yi - 1]] : [];
+  return `
+  <div class="card-head" style="margin:0"><div class="chips" role="group" aria-label="Velg år">${YEARS.map(y => `<button class="chip" data-action="year" data-v="${y}" aria-pressed="${S.year === y}">${y}${y === 2026 ? ' (prognose)' : ''}</button>`).join('')}</div>
+  <button class="btn" data-action="toast" data-msg="I produktet blir dette et ferdig vedlegg til årsberetningen, med nøkkeltall og avvik forklart.">Lag oppsummering til generalforsamlingen</button></div>
+  <div class="tiles five">
+    ${tile('Inntekter', kr(inn), delta(inn, prev[0]), 'regnskap')}
+    ${tile('Kostnader', kr(kos), delta(kos, prev[1]), 'regnskap')}
+    ${tile('Årsresultat', kr(res), prog ? 'Prognose for hele året' : 'Før avdrag på fellesgjeld', 'regnskap')}
+    ${tile('Disponible midler', kr(DISP[yi]), `Per 31. desember ${S.year}`, 'regnskap')}
+    ${tile('Fellesgjeld', kr(GJELD[yi]), `${kr(GJELD[yi] / 2604)} per m²`, 'regnskap')}
+  </div>
+  <div class="grid-2e">
+    <section class="card"><div class="card-head"><div><h2 class="h2">Kostnader etter art, ${S.year}</h2><p class="sub">Hele kroner. Pek på en stolpe for andel og endring.</p></div></div>${costBars(yi)}</section>
+    <section class="card"><div class="card-head"><div><h2 class="h2">Inntekter og kostnader per år</h2><p class="sub">Tallet under året er årsresultatet. Trykk på et år for å velge det.</p></div><div class="legend"><span><span class="sw" style="background:var(--s1);border-color:var(--s1)"></span>Inntekter</span><span><span class="sw" style="background:var(--s2);border-color:var(--s2)"></span>Kostnader</span></div></div>${yearsChart()}<p class="yr-note">* 2026 er prognose. Renteutgiftene toppet seg i 2024, samme år som balkongene ble rehabilitert.</p></section>
+  </div>
+  <section class="card">
+    <div class="card-head"><div><h2 class="h2">Resultatregnskap ${S.year}</h2><p class="sub">${prog ? 'Prognose mot budsjett' : 'Regnskap mot budsjett'}. Grønt avvik er bra for borettslaget.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Post</th><th class="r">${prog ? 'Prognose' : 'Regnskap'}</th><th class="r">Budsjett</th><th class="r">Avvik</th></tr></thead><tbody>
+      <tr class="head"><td colspan="4">Inntekter</td></tr>
+      ${Object.entries(INNT).map(([k, v]) => row(k, v[yi], budget(k, v[yi], yi), 1)).join('')}
+      ${row('Sum inntekter', inn, Object.entries(INNT).reduce((s, [k, v]) => s + budget(k, v[yi], yi), 0), 1, 'sum')}
+      <tr class="head"><td colspan="4">Kostnader</td></tr>
+      ${Object.entries(KOST).filter(([, v]) => v[yi] > 0).map(([k, v]) => row(k, v[yi], budget(k, v[yi], yi), -1)).join('')}
+      ${row('Sum kostnader', kos, Object.entries(KOST).reduce((s, [k, v]) => s + budget(k, v[yi], yi), 0), -1, 'sum')}
+      <tr class="total"><td>Årsresultat</td><td class="r">${kr(res)}</td><td></td><td></td></tr>
+    </tbody></table></div>
+    <p class="yr-note">Endring i disponible midler er årsresultatet minus avdrag på fellesgjelden. Forenklet oppstilling for demoen.</p>
+  </section>`;
+}
+function row(k, v, b, dir, cls = '') {
+  const av = v - b, good = av * dir >= 0;
+  return `<tr class="${cls}"><td>${k}</td><td class="r">${nf(v)}</td><td class="r">${nf(b)}</td><td class="r ${av === 0 ? '' : good ? 'pos' : 'neg'}">${av === 0 ? '0' : (av > 0 ? '+' : '−') + nf(Math.abs(av))}</td></tr>`;
+}
+function costBars(yi) {
+  const rows = Object.entries(KOST).map(([k, v]) => [k, v[yi], yi > 0 ? v[yi - 1] : 0]).filter(r => r[1] > 0).sort((a, b) => b[1] - a[1]);
+  const max = rows[0][1], tot = rows.reduce((s, r) => s + r[1], 0);
+  return `<div class="hbars">${rows.map(([k, v, p]) => `<div class="hbar" tabindex="0" data-tip="${esc(`${k}: ${kr(v)}, ${pct(v / tot)} av kostnadene${p ? `, ${v >= p ? '+' : ''}${pct((v - p) / p)} fra ${YEARS[yi - 1]}` : ''}`)}"><span class="hbar-l">${k}</span><span class="hbar-t"><span class="hbar-f" style="width:${(v / max * 100).toFixed(1)}%"></span></span><span class="hbar-v">${nf(v)}</span></div>`).join('')}</div>`;
+}
+function topRounded(x, y, w, h, r) { r = Math.min(r, h, w / 2); return `M${x.toFixed(1)} ${(y + h).toFixed(1)}V${(y + r).toFixed(1)}Q${x.toFixed(1)} ${y.toFixed(1)} ${(x + r).toFixed(1)} ${y.toFixed(1)}H${(x + w - r).toFixed(1)}Q${(x + w).toFixed(1)} ${y.toFixed(1)} ${(x + w).toFixed(1)} ${(y + r).toFixed(1)}V${(y + h).toFixed(1)}Z`; }
+function yearsChart() {
+  const W = 560, H = 270, pl = 56, pr = 10, pt = 14, pb = 50, max = 3e6, iw = W - pl - pr, ih = H - pt - pb;
+  const y = v => pt + ih - v / max * ih;
+  let g = '';
+  [0, 1e6, 2e6, 3e6].forEach(t => { g += `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" class="grid"/><text x="${pl - 8}" y="${y(t)}" class="axis" text-anchor="end" dominant-baseline="central">${t ? (t / 1e6) + ' mill.' : '0'}</text>`; });
+  const gw = iw / YEARS.length, bw = Math.min(32, gw * .32);
+  YEARS.forEach((yr, i) => {
+    const inn = sumI(i), kos = sumK(i), cx = pl + gw * i + gw / 2, sel = yr === S.year;
+    [[inn, 's1', 'Inntekter'], [kos, 's2', 'Kostnader']].forEach(([v, c, l], j) => {
+      const x = j === 0 ? cx - bw - 1 : cx + 1;
+      g += `<path d="${topRounded(x, y(v), bw, y(0) - y(v), 4)}" class="bar ${c}${sel ? '' : ' dim'}" data-action="year" data-v="${yr}" data-tip="${esc(`${l} ${yr}${yr === 2026 ? ' (prognose)' : ''}: ${kr(v)}`)}"/>`;
+    });
+    g += `<text x="${cx}" y="${H - pb + 19}" class="axis${sel ? ' strong' : ''}" text-anchor="middle">${yr}${yr === 2026 ? '*' : ''}</text><text x="${cx}" y="${H - pb + 36}" class="axis small" text-anchor="middle">+${nf(Math.round((inn - kos) / 1000) * 1000)}</text>`;
+  });
+  g += `<line x1="${pl}" x2="${W - pr}" y1="${y(0)}" y2="${y(0)}" class="baseline"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Inntekter og kostnader 2022 til 2026">${g}</svg>`;
+}
+
+function vMinside() {
+  const u = unit(ME), s = S.soknader.find(x => x.enhet === ME);
+  const months = ['jun', 'jul', 'aug', 'sep', 'okt', 'nov'];
+  return `
+  <div class="grid-3">
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Min bolig</h2></div>
+      <dl class="kv"><dt>Enhet</dt><dd class="mono">${u.id}</dd><dt>Adresse</dt><dd>${u.adr}, ${u.floor}. etasje</dd><dt>Andel nr.</dt><dd>${u.andel}</dd><dt>Størrelse</dt><dd>${u.size} m², ${u.rom}-roms</dd><dt>Bod</dt><dd>${u.bod}</dd><dt>Andel fellesgjeld</dt><dd>${kr(u.gjeld)}</dd></dl>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Felleskostnader</h2></div>
+      <div class="bigline">${kr(u.belop)}</div>
+      <div class="mini-meta">per måned. Desember forfaller 1. desember med KID <span class="mono">${kid(u.andel, '2612')}</span></div>
+      <div class="pay-row">${months.map(m => `<div class="pay"><i>${ICON.check.replace('<svg', '<svg width="14" height="14"')}</i>${m}</div>`).join('')}</div>
+      <div class="mini-meta" style="margin-top:8px">Alle de seks siste månedene er betalt.</div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2 class="h2">Min utleiesøknad</h2></div>
+      ${s.status === 'til behandling' ? `<span class="pill warn">${ICON.clock}Til behandling hos styret</span>` : s.status === 'godkjent' ? `<span class="pill good">${ICON.check}Godkjent i sak ${s.sak}</span>` : `<span class="pill crit">Avslått i sak ${s.sak}</span>`}
+      <dl class="kv" style="margin-top:12px"><dt>Periode</dt><dd>${s.periode}</dd><dt>Leietaker</dt><dd>${esc(s.leietaker)}</dd><dt>Svar senest</dt><dd>${fd(s.frist)}</dd></dl>
+      <p class="fine" style="margin-top:10px">${RULES.svarfrist}</p>
+    </section>
+  </div>
+  <div class="grid-2">
+    <section class="card ask" id="ask" style="position:static">${askPanel()}</section>
+    <div style="display:grid;gap:20px;align-content:start">
+      <section class="card">
+        <div class="card-head"><div><h2 class="h2">Send melding til styret</h2><p class="sub">Meldingen havner på styrets oversikt.</p></div></div>
+        <form class="form" id="msgForm"><label class="f" for="msgText">Hva gjelder det?</label><textarea id="msgText" placeholder="For eksempel: Lyset i kjelleren i oppgang A har gått." required></textarea><div><button class="btn primary" type="submit">${ICON.send}Send til styret</button></div></form>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2 class="h2">Neste i borettslaget</h2></div>
+        <ul class="agenda">${agendaItems().filter(e => e.c === 'mote' && !e.t.startsWith('Styremøte')).slice(0, 2).concat(agendaItems().filter(e => e.c === 'kontroll').slice(0, 1)).sort((a, b) => D(a.d) - D(b.d)).map(e => `<li class="ag"><div class="ag-d"><b>${D(e.d).getDate()}</b><span>${D(e.d).toLocaleDateString('nb-NO', { month: 'short' }).replace('.', '')}</span></div><div><div class="ag-t">${esc(e.t)}</div><div class="ag-s">${esc(e.s || '')}</div></div></li>`).join('')}</ul>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2 class="h2">Styret</h2></div>
+        <ul class="mini-list">${BOARD.slice(0, 3).map(b => { const m = unit(b.enhet); return `<li><div class="mini-top"><span class="mini-title">${esc(m.eier)}</span><span class="pill">${b.rolle}</span></div><div class="mini-meta">${m.epost}</div></li>`; }).join('')}</ul>
+      </section>
+    </div>
+  </div>`;
+}
+
+/* ---------- Skuff ---------- */
+function openDrawer(html) { $('drawer').innerHTML = html; $('drawer').hidden = false; $('scrim').hidden = false; $('drawer').querySelector('.x')?.focus(); }
+function closeDrawer() { $('drawer').hidden = true; $('scrim').hidden = true; }
+function openUnit(id) {
+  if (S.role !== 'styret') return;
+  const u = unit(id), l = LANGTID.find(x => x.enhet === id), k = KORTTID.find(x => x.enhet === id), sk = S.soknader.find(x => x.enhet === id), b = BOARD.find(x => x.enhet === id);
+  const docs = DOCS.filter(d => d.title.includes(id));
+  openDrawer(`
+    <div class="drawer-head"><div><div class="eyebrow">Andel ${u.andel} · ${u.adr}</div><h2 id="drawerTitle">${u.id}</h2></div><button class="x" data-action="close" aria-label="Lukk">${ICON.x}</button></div>
+    <div class="checks">${brukPill(u.bruk)}${betPill(u.bet)}${b ? `<span class="pill accent">${b.rolle}</span>` : ''}</div>
+    <div class="dsec"><h3 class="h3">Andelseier</h3><dl class="kv"><dt>Navn</dt><dd>${esc(u.eier)}</dd><dt>E-post</dt><dd>${u.epost}</dd><dt>Telefon</dt><dd class="num">${u.tlf}</dd><dt>Eier siden</dt><dd>${u.siden}</dd></dl></div>
+    ${l ? `<div class="dsec"><h3 class="h3">Leietaker</h3><dl class="kv"><dt>Navn</dt><dd>${esc(l.leietaker)}</dd><dt>E-post</dt><dd>${l.kontakt}</dd><dt>Periode</dt><dd>${fd(l.fra)} til ${fd(l.til)}</dd><dt>Godkjent</dt><dd>Sak ${l.sak}</dd></dl></div>` : ''}
+    ${k ? `<div class="dsec"><h3 class="h3">Korttidsutleie 2026</h3><dl class="kv"><dt>Døgn</dt><dd>${nights(k)} av ${RULES.korttidGrense}</dd>${k.opphold.map(([a, c], i) => `<dt>Opphold ${i + 1}</dt><dd>${fdm(a)} til ${fdm(c)}</dd>`).join('')}</dl></div>` : ''}
+    ${sk ? `<div class="dsec"><h3 class="h3">Søknad om utleie</h3><dl class="kv"><dt>Status</dt><dd>${sk.status === 'til behandling' ? 'Til behandling' : sk.status === 'godkjent' ? 'Godkjent, sak ' + sk.sak : 'Avslått, sak ' + sk.sak}</dd><dt>Periode</dt><dd>${sk.periode}</dd><dt>Svarfrist</dt><dd>${fd(sk.frist)}</dd></dl></div>` : ''}
+    <div class="dsec"><h3 class="h3">Boligen</h3><dl class="kv"><dt>Bruksenhetsnr.</dt><dd class="mono">${u.bnr}</dd><dt>Størrelse</dt><dd>${u.size} m², ${u.rom}-roms, ${u.floor}. etasje</dd><dt>Bod</dt><dd>${u.bod}</dd><dt>Parkering</dt><dd>${u.park ? 'Plass ' + u.park : 'Ingen'}</dd><dt>Ladepunkt</dt><dd>${u.lade ? 'Ja, 350 kr i måneden' : 'Nei'}</dd></dl></div>
+    <div class="dsec"><h3 class="h3">Økonomi</h3><dl class="kv"><dt>Felleskostnad</dt><dd>${kr(u.fk)} per måned</dd><dt>Med tillegg</dt><dd>${kr(u.belop)} per måned</dd><dt>Andel fellesgjeld</dt><dd>${kr(u.gjeld)}</dd><dt>November</dt><dd>${u.bet === 'betalt' ? 'Betalt' : u.bet === 'ubetalt' ? 'Forfalt 1. november' : 'Oktober og november er ubetalt'}</dd></dl></div>
+    ${docs.length ? `<div class="dsec"><h3 class="h3">Dokumenter</h3>${docs.map(d => `<button class="src" data-action="doc" data-id="${d.id}">${esc(d.title)}</button>`).join('')}</div>` : ''}
+  `);
+}
+function openDoc(id) {
+  const d = DOCS.find(x => x.id === id);
+  const by = unit(BOARD[(+d.id.slice(1)) % 4].enhet).eier;
+  openDrawer(`
+    <div class="drawer-head"><div><div class="eyebrow">${CATS[d.cat]}</div><h2 id="drawerTitle">${esc(d.title)}</h2></div><button class="x" data-action="close" aria-label="Lukk">${ICON.x}</button></div>
+    <dl class="kv"><dt>Dato</dt><dd>${fd(d.date)}</dd><dt>Størrelse</dt><dd>${d.size}, PDF</dd><dt>Lastet opp av</dt><dd>${esc(by)}</dd><dt>Synlig for</dt><dd>${d.pub ? 'Alle beboere' : 'Bare styret'}</dd></dl>
+    <div class="preview" aria-hidden="true"><b style="font-family:var(--f-display)">Kløverhagen borettslag</b><span class="muted" style="font-size:13px">${esc(d.title)}</span>${[92, 100, 86, 97, 70, 0, 95, 88, 99, 60].map(w => w ? `<i style="width:${w}%"></i>` : '<span style="height:6px"></span>').join('')}</div>
+    <p class="fine">Her vises selve dokumentet i produktet. Teksten er lest inn, slik at «Spør arkivet» kan svare fra den.</p>
+  `);
+}
+
+/* ---------- Handlinger ---------- */
+function nextSak() { const n = Math.max(...S.vedtak.filter(v => v.sak.endsWith('/26')).map(v => +v.sak.split('/')[0])) + 1; return String(n).padStart(2, '0') + '/26'; }
+function decide(id, ok) {
+  const s = S.soknader.find(x => x.id === id); const nr = nextSak();
+  s.status = ok ? 'godkjent' : 'avslått'; s.sak = nr;
+  S.vedtak.unshift({ sak: nr, dato: iso(TODAY), tittel: ok ? `Godkjent utleie av ${s.enhet}, ${s.periode}` : `Avslag på utleiesøknad fra ${s.enhet}`, status: 'Utført', ansvar: 'C-H0301', ny: true });
+  DOCS.push(doc('utleie', `${ok ? 'Godkjent' : 'Avslått'} utleie ${s.enhet}`, iso(TODAY), '36 kB', false));
+  if (ok) { const [fra, til] = s.enhet === 'A-H0302' ? ['2027-01-01', '2027-12-31'] : ['2027-01-01', '2027-06-30']; LANGTID.push({ enhet: s.enhet, leietaker: s.leietaker, kontakt: s.kontakt, fra, til, sak: nr }); unit(s.enhet).bruk = 'utleid'; }
+  toast(`Vedtak ${nr} er lagt i vedtaksregisteret, og svarbrevet ligger i arkivet. I demoen sendes ingenting.`);
+  render();
+}
+let toastT;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4200); }
+
+/* ---------- Tegning ---------- */
+function renderSide() {
+  const nav = S.role === 'styret' ? NAV_STYRE : NAV_BEBOER;
+  $('side').innerHTML = `
+    <div class="brand">${LOGO}<div><div class="brand-name">Tun</div><div class="brand-sub">styreportal</div></div></div>
+    <div class="entity"><div class="entity-name">Kløverhagen borettslag</div><div class="entity-meta">Org.nr. <span class="mono">999 999 999</span></div><div class="entity-meta">36 andeler · Oslo · stiftet 1987</div></div>
+    <nav class="nav" aria-label="Moduler">${nav.map(n => { const c = n.count ? n.count() : ''; return `<button class="nav-item${S.view === n.id ? ' is-active' : ''}" data-action="nav" data-view="${n.id}"${S.view === n.id ? ' aria-current="page"' : ''}>${ICON[n.icon]}<span>${n.label}</span>${c ? `<span class="nav-count">${c}</span>` : ''}</button>`; }).join('')}</nav>
+    <div class="role"><div class="role-label">Vis som</div><div class="seg" role="group" aria-label="Vis som"><button data-action="role" data-role="styret" aria-pressed="${S.role === 'styret'}">Styret</button><button data-action="role" data-role="beboer" aria-pressed="${S.role === 'beboer'}">Beboer</button></div></div>`;
+}
+const VIEWS = { oversikt: vOversikt, enheter: vEnheter, utleie: vUtleie, dokumenter: vDokumenter, styret: vStyret, arshjul: vArshjul, faktura: vFaktura, regnskap: vRegnskap, minside: vMinside };
+function render() {
+  renderSide();
+  const [h, p] = HEAD[S.view];
+  $('top').innerHTML = `<div><h1>${h}</h1><p>${p}</p></div><div class="top-meta"><span class="badge">Eksempeldata, fiktivt borettslag</span><span class="badge">Demodato ${fd(iso(TODAY))}</span><a class="badge" href="tun-demo-sameie.html">Se sameieversjonen</a></div>`;
+  $('view').innerHTML = VIEWS[S.view]();
+  document.title = `${h} · Tun styreportal`;
+}
+function setView(v) {
+  const allowed = (S.role === 'styret' ? NAV_STYRE : NAV_BEBOER).some(n => n.id === v);
+  if (!allowed) return;
+  S.view = v; S.selEvent = null; render(); window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + v); } catch (e) { }
+}
+
+/* ---------- Hendelser ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]'); if (!el) return;
+  const a = el.dataset.action, v = el.dataset.v;
+  if (a === 'nav') setView(el.dataset.view);
+  else if (a === 'role') { S.role = el.dataset.role; S.view = S.role === 'styret' ? 'oversikt' : 'minside'; S.askLog = []; S.docCat = 'alle'; S.docYear = 'alle'; S.docQuery = ''; render(); window.scrollTo(0, 0); try { history.replaceState(null, '', '#' + S.view); } catch (err) { } }
+  else if (a === 'unit') openUnit(el.dataset.id);
+  else if (a === 'doc') openDoc(el.dataset.id);
+  else if (a === 'close') closeDrawer();
+  else if (a === 'ufilter') { S.unitFilter = v; render(); }
+  else if (a === 'dcat') { S.docCat = v; document.querySelectorAll('[data-action="dcat"]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v)); $('docList').innerHTML = docList(); }
+  else if (a === 'vfilter') { S.vedtakFilter = v; render(); }
+  else if (a === 'ifilter') { S.invFilter = v; render(); }
+  else if (a === 'year') { S.year = +v; render(); }
+  else if (a === 'approve' || a === 'reject') decide(el.dataset.id, a === 'approve');
+  else if (a === 'ask') ask(el.dataset.q);
+  else if (a === 'toast') toast(el.dataset.msg);
+  else if (a === 'desember') { S.desemberKlar = true; render(); toast(`36 fakturaer for desember er klare, til sammen ${kr(units.reduce((s, u) => s + u.belop, 0))}. De sendes 15. november. I demoen sendes ingenting.`); }
+  else if (a === 'wheel') { S.selEvent = +el.dataset.i; render(); document.getElementById('ev' + el.dataset.i)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  else if (a === 'scroll') document.getElementById(el.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('drawer').hidden) closeDrawer();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.doc,.wdot')) { e.preventDefault(); e.target.click ? e.target.click() : e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'unitSearch') { S.unitQuery = e.target.value; $('unitTable').innerHTML = unitTable(); }
+  if (e.target.id === 'docSearch') { S.docQuery = e.target.value; $('docList').innerHTML = docList(); }
+});
+document.addEventListener('change', e => { if (e.target.id === 'docYear') { S.docYear = e.target.value; $('docList').innerHTML = docList(); } });
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'askForm') { const i = $('askInput'); ask(i.value); i.value = ''; }
+  if (e.target.id === 'msgForm') {
+    const t = $('msgText').value.trim(); if (!t) return;
+    S.henv.unshift({ fra: 'Hanne Myrvold', enhet: ME, emne: t.length > 70 ? t.slice(0, 67) + '...' : t, dato: iso(TODAY), status: 'Ny' });
+    $('msgText').value = '';
+    toast('Meldingen er sendt til styret. Bytt til «Styret» nede i menyen for å se den på oversikten.');
+  }
+});
+/* Verktøytips */
+const tip = $('tip');
+function showTip(el, x, y) { tip.textContent = el.dataset.tip; tip.hidden = false; const r = tip.getBoundingClientRect(); tip.style.left = Math.min(window.innerWidth - r.width - 8, Math.max(8, x + 14)) + 'px'; tip.style.top = Math.max(8, y - r.height - 12) + 'px'; }
+document.addEventListener('mousemove', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el, e.clientX, e.clientY); else tip.hidden = true; });
+document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); if (el) { const r = el.getBoundingClientRect(); showTip(el, r.left + r.width / 2, r.top); } });
+document.addEventListener('focusout', () => tip.hidden = true);
+window.addEventListener('scroll', () => tip.hidden = true, { passive: true });
+
+/* ---------- Start ---------- */
+(() => {
+  const h = (location.hash || '').slice(1);
+  if (h === 'minside') { S.role = 'beboer'; S.view = 'minside'; }
+  else if (NAV_STYRE.some(n => n.id === h)) S.view = h;
+  render();
+})();
+</script>
+</body>
+</html>
