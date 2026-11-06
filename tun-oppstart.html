@@ -479,7 +479,7 @@ function nice(s) {
 /* ---------- Eksempelet (oppdiktet) ---------- */
 const EX_ORG = {
   orgnr: '999999999', navn: 'Kløverhagen borettslag', form: 'BRL', formNavn: 'Borettslag', adresse: 'Kløverveien 2, Oslo', stiftet: '1987-03-12', fr: true, sisteRegnskap: '2025',
-  ffor: null, regn: 'Eksempel Regnskap AS', revisor: 'Eksempel Revisjon AS', example: true,
+  ffor: null, regn: 'Eksempel Regnskap AS', revisor: 'Eksempel Revisjon AS', example: true, confirmed: true,
   styret: [['Ingrid Haugland', 'Styreleder'], ['Morten Aas', 'Nestleder'], ['Sara Lindqvist', 'Styremedlem'], ['Jonas Berg', 'Styremedlem'], ['Amira Hassan', 'Varamedlem']]
 };
 const NAMES = ['Per Ivar Solheim', 'Tobias Engen', 'Nora Sæther', 'Erik Fosse', 'Linnea Dahl', 'Kristoffer Moe', 'Marte Rønning', 'Hanne Myrvold', 'Ali Rahimi', 'Silje Holm', 'Morten Aas', 'Henrik Strand',
@@ -544,6 +544,24 @@ function plikter() {
     { t: 'Svar på søknad om utleie', s: 'Ellers regnes leietakeren som godkjent', val: 'Innen én måned' },
     { t: 'Korttidsutleie uten godkjenning', s: 'Når andelseieren selv bor i boligen', val: '30 døgn i året' }
   ];
+  if (o.form === 'AS') return [
+    { t: 'Ordinær generalforsamling innen seks måneder etter årsslutt', s: 'Aksjeloven § 5-5. For kalenderår betyr det innen utgangen av juni.', on: true },
+    { t: 'Registrering i Foretaksregisteret', s: 'Gjelder alle aksjeselskaper', on: true, avvik: !o.fr && 'Står ikke i Foretaksregisteret' },
+    { t: 'Årsregnskap til Regnskapsregisteret innen 31. juli', s: o.sisteRegnskap ? `Gjelder alle aksjeselskaper. Siste levert: ${o.sisteRegnskap}.` : 'Gjelder alle aksjeselskaper', on: true, avvik: !o.sisteRegnskap && 'Ingen årsregnskap registrert' },
+    { t: 'Tredjepartsopplysninger til Skatteetaten innen 31. januar', s: 'Gjelder boligaksjeselskaper som ikke skattlegges som eget selskap, og det er det vanlige', on: true, onLabel: 'Gjelder normalt' },
+    { t: 'Revisor', s: o.revisor ? `Små aksjeselskaper kan velge bort revisor (aksjeloven § 7-6). Registrert: ${o.revisor}.` : 'Små aksjeselskaper kan velge bort revisor (aksjeloven § 7-6)', val: 'Kan velges bort' },
+    { t: 'Svar på søknad om utleie', s: 'Burettslagslova kapittel 5 gjelder også for boligaksjeselskaper (§ 1-4)', val: 'Innen én måned' },
+    { t: 'Korttidsutleie uten godkjenning', s: 'Samme regel som i borettslag, når aksjonæren selv bor i boligen', val: '30 døgn i året' }
+  ];
+  if (o.form === 'SAM') return [
+    { t: 'Årlig møte', s: 'Sameieloven har ingen krav om årlig møte. Flertallet, det vil si de som eier mer enn halvparten, bestemmer (§ 4).', val: 'Ikke lovpålagt' },
+    { t: 'Styre', s: 'Flertallet kan velge et styre, men da må sameiet ha skrevne vedtekter først (§ 6)', val: 'Valgfritt' },
+    { t: 'Fordeling av kostnader', s: 'Skatter og avgifter etter hvor stor part hver eier. Andre felleskostnader etter nytten (§ 8).', val: 'Etter part og nytte' },
+    { t: 'Salg av en part', s: 'Medeierne har forkjøpsrett når en part skifter eier (§ 11)', val: 'Forkjøpsrett' },
+    { t: 'Årsregnskap til Regnskapsregisteret', s: 'Tingsrettslige sameier står ikke blant dem som må levere', on: false },
+    { t: 'Tredjepartsopplysninger til Skatteetaten', s: 'Skatteetatens regler for boligsameier er skrevet for seksjonerte sameier. Om de gjelder her, må sjekkes.', tbd: true },
+    { t: 'Grense for korttidsutleie', s: 'Grensene i eierseksjonsloven og burettslagslova gjelder ikke. Sjekk vedtektene, om dere har dem.', val: 'Ingen lovfestet grense' }
+  ];
   const N = S.counts.seksjoner, B = S.counts.bolig ?? N;
   const known = N != null;
   return [
@@ -558,8 +576,8 @@ function plikter() {
 function pliktCard() {
   const P = plikter();
   const avvik = P.filter(p => p.avvik);
-  return `<section class="card"><div class="card-head"><div><h2 class="h2">Pliktene som gjelder dere</h2><p class="sub">${S.org.form === 'BRL' ? 'Lest ut fra organisasjonsformen og det som står i Brønnøysund.' : 'Lest ut fra antall seksjoner. Fyll inn tallene over, så oppdateres listen.'}</p></div></div>
-  <div class="plikter">${P.map(p => `<div class="plikt"><span class="plikt-t">${p.t}</span>${p.val ? `<span class="pill info">${p.val}</span>` : p.on === null ? '<span class="pill">Oppgi antall</span>' : p.on ? `<span class="pill good">${ICON.check}${p.onLabel || 'Gjelder'}</span>` : `<span class="pill">${p.offLabel || 'Gjelder ikke'}</span>`}<span class="plikt-s">${esc(p.s)}</span>${p.avvik ? `<span class="plikt-s"><span class="pill crit">${ICON.alert}${p.avvik}</span></span>` : ''}</div>`).join('')}</div>
+  return `<section class="card"><div class="card-head"><div><h2 class="h2">Pliktene som gjelder dere</h2><p class="sub">${S.org.form === 'ESEK' ? 'Lest ut fra antall seksjoner. Fyll inn tallene over, så oppdateres listen.' : S.org.form === 'SAM' ? 'Lest ut fra sameieloven. Et tingsrettslig sameie har langt færre lovfestede plikter enn et seksjonert sameie.' : 'Lest ut fra organisasjonsformen og det som står i Brønnøysund.'}</p></div></div>
+  <div class="plikter">${P.map(p => `<div class="plikt"><span class="plikt-t">${p.t}</span>${p.tbd ? '<span class="pill warn">Må avklares</span>' : p.val ? `<span class="pill info">${p.val}</span>` : p.on === null ? '<span class="pill">Oppgi antall</span>' : p.on ? `<span class="pill good">${ICON.check}${p.onLabel || 'Gjelder'}</span>` : `<span class="pill">${p.offLabel || 'Gjelder ikke'}</span>`}<span class="plikt-s">${esc(p.s).replace(/§ /g, '§ ')}</span>${p.avvik ? `<span class="plikt-s"><span class="pill crit">${ICON.alert}${p.avvik}</span></span>` : ''}</div>`).join('')}</div>
   ${avvik.length ? `<p class="fine" style="margin-top:12px">${avvik.length === 1 ? 'Ett punkt' : avvik.length + ' punkter'} bør sjekkes. Tun legger dem øverst på styrets oversikt.</p>` : ''}</section>`;
 }
 
@@ -569,6 +587,24 @@ const STEPS = [['Finn laget', 'Organisasjonsnummer'], ['Beboere', 'Excel eller C
 
 /* ---------- Brønnøysund ---------- */
 const API = 'https://data.brreg.no/enhetsregisteret/api';
+const FORMNAVN = { BRL: 'Borettslag', ESEK: 'Eierseksjonssameie', AS: 'Boligaksjeselskap', SAM: 'Tingsrettslig sameie' };
+const FORMKORT = { BRL: 'borettslag', ESEK: 'sameie', AS: 'boligaksjeselskap', SAM: 'tingsrettslig sameie' };
+const STRL = { BRL: 'Antall andeler', ESEK: 'Antall seksjoner', AS: 'Antall leiligheter', SAM: 'Antall boenheter' };
+function signals(o) {
+  if (o.form === 'AS') return [
+    ['Næringskode 97.001, borettslag og boligsameier', o.bolig, o.naering ? `Registrert: ${o.naering}` : 'Ingen næringskode registrert'],
+    ['Stiftet før 15. august 2005', !!o.stiftet && o.stiftet < '2005-08-15', 'Nye boligaksjeselskaper kan ikke stiftes etter denne datoen'],
+    ['Forretningsfører registrert', !!o.ffor, o.ffor || 'Vanlige aksjeselskaper har sjelden forretningsfører'],
+    ['Formålet nevner bolig eller leilighet', o.formaalBolig, 'Fra formålet i vedtektene'],
+    ['Ingen ansatte', o.ansatte === 0, o.ansatte ? `${o.ansatte} ansatte` : 'Boligselskaper har nesten aldri ansatte']
+  ];
+  if (o.form === 'SAM') return [
+    ['Næringskode 97.001, borettslag og boligsameier', o.bolig, o.naering ? `Registrert: ${o.naering}` : 'Ingen næringskode registrert'],
+    ['Formålet nevner bolig eller leilighet', o.formaalBolig, 'Fra formålet i vedtektene'],
+    ['Forretningsfører registrert', !!o.ffor, o.ffor || 'Ingen registrert']
+  ];
+  return [];
+}
 async function search(q) {
   const digits = q.replace(/\s/g, '');
   S.err = ''; S.hits = [];
@@ -576,21 +612,25 @@ async function search(q) {
   if (q.trim().length < 3) { S.err = 'Skriv organisasjonsnummeret (ni sifre) eller minst tre bokstaver av navnet.'; return render(); }
   S.busy = true; render();
   try {
-    const r = await fetch(`${API}/enheter?navn=${encodeURIComponent(q.trim())}&organisasjonsform=BRL,ESEK&size=8`);
+    const r = await fetch(`${API}/enheter?navn=${encodeURIComponent(q.trim())}&naeringskode=97.001&size=8`);
     const j = await r.json();
     S.hits = (j._embedded?.enheter || []).map(e => ({ orgnr: e.organisasjonsnummer, navn: nice(e.navn), form: e.organisasjonsform.kode, sted: nice(e.forretningsadresse?.poststed || '') }));
-    if (!S.hits.length) S.err = `Fant ingen borettslag eller sameier med «${q.trim()}» i navnet.`;
+    if (!S.hits.length) S.err = `Fant ingen borettslag, sameier eller boligaksjeselskaper med «${q.trim()}» i navnet.`;
   } catch (e) { S.err = 'Fikk ikke kontakt med Brønnøysundregistrene. Sjekk nettet, eller bruk eksempelet.'; }
   S.busy = false; render();
 }
 async function pick(orgnr) {
-  S.busy = true; S.err = ''; S.hits = []; render();
+  S.busy = true; S.err = ''; S.hits = []; S.org = null; render();
   try {
     const r = await fetch(`${API}/enheter/${orgnr}`);
     if (r.status === 404 || r.status === 410) throw new Error('notfound');
     if (!r.ok) throw new Error('net');
     const e = await r.json();
-    if (!['BRL', 'ESEK'].includes(e.organisasjonsform?.kode)) { S.err = `${nice(e.navn)} er registrert som ${(e.organisasjonsform?.beskrivelse || 'noe annet').toLowerCase()}. Tun er laget for borettslag og sameier.`; S.busy = false; return render(); }
+    const kode = e.organisasjonsform?.kode;
+    const nk = [e.naeringskode1, e.naeringskode2, e.naeringskode3].filter(Boolean);
+    const bolig = nk.some(n => n.kode === '97.001');
+    if (kode === 'AS' && !bolig && e.stiftelsesdato && e.stiftelsesdato >= '2005-08-15') { S.err = `${nice(e.navn)} er et aksjeselskap stiftet ${fdate(e.stiftelsesdato)}. Nye boligaksjeselskaper kan ikke stiftes etter 15. august 2005, så Tun regner det ikke som et boligselskap.`; S.busy = false; return render(); }
+    if (!['BRL', 'ESEK', 'AS', 'SAM'].includes(kode)) { S.err = `${nice(e.navn)} er registrert som ${(e.organisasjonsform?.beskrivelse || 'noe annet').toLowerCase()}. Tun er laget for borettslag, sameier og boligaksjeselskaper.`; S.busy = false; return render(); }
     let roller = { rollegrupper: [] };
     try { const rr = await fetch(`${API}/enheter/${orgnr}/roller`); if (rr.ok) roller = await rr.json(); } catch (x) { }
     const all = roller.rollegrupper.flatMap(g => g.roller.map(x => ({ g: g.type.kode, r: x }))).filter(x => !x.r.fratraadt && !x.r.avregistrert);
@@ -600,8 +640,11 @@ async function pick(orgnr) {
     const styret = all.filter(x => x.g === 'STYR' && x.r.person).sort((a, b) => (ORDER[a.r.type.kode] ?? 9) - (ORDER[b.r.type.kode] ?? 9))
       .map(x => { const n = x.r.person.navn; return [[n.fornavn, n.mellomnavn, n.etternavn].filter(Boolean).join(' '), RN[x.r.type.kode] || x.r.type.beskrivelse]; });
     const a = e.forretningsadresse || e.postadresse || {};
+    const formaal = [].concat(e.vedtektsfestetFormaal || [], e.aktivitet || []).join(' ');
     S.org = {
-      orgnr, navn: nice(e.navn), form: e.organisasjonsform.kode, formNavn: e.organisasjonsform.kode === 'BRL' ? 'Borettslag' : 'Eierseksjonssameie',
+      orgnr, navn: nice(e.navn), form: kode, formNavn: FORMNAVN[kode],
+      naering: nk[0] ? `${nk[0].kode} ${nk[0].beskrivelse}` : null, bolig, formaalBolig: /bolig|leilighet|husvær|bustad/i.test(formaal), ansatte: e.antallAnsatte || 0,
+      confirmed: kode === 'BRL' || kode === 'ESEK' || bolig,
       adresse: [...(a.adresse || []), [a.postnummer, nice(a.poststed || '')].filter(Boolean).join(' ')].filter(Boolean).join(', '),
       stiftet: e.stiftelsesdato, fr: !!e.registrertIForetaksregisteret, sisteRegnskap: e.sisteInnsendteAarsregnskap || null,
       ffor: enhet('FFØR'), regn: enhet('REGN'), revisor: enhet('REVI'), styret, example: false, hentet: new Date()
@@ -678,12 +721,19 @@ function v1() {
     <div class="card-head"><div><h2 class="h2">Finn borettslaget eller sameiet</h2><p class="sub">Skriv organisasjonsnummeret eller navnet. Tun henter resten fra Brønnøysundregistrene.</p></div></div>
     <form class="lookup" id="lookForm"><input id="q" value="${esc(S.q)}" placeholder="For eksempel 999 999 999 eller Kløvertoppen" aria-label="Organisasjonsnummer eller navn" autocomplete="off"><button class="btn primary" type="submit">${ICON.search}${S.busy ? 'Henter...' : 'Hent fra Brønnøysund'}</button><button class="btn" type="button" data-act="example">Bruk eksempelet</button></form>
     ${S.err ? `<p class="err" style="margin-top:12px">${esc(S.err)}</p>` : ''}
-    ${S.hits.length ? `<ul class="hits">${S.hits.map(h => `<li><button data-pick="${h.orgnr}"><span><b>${esc(h.navn)}</b> <span class="muted">${h.form === 'BRL' ? 'borettslag' : 'sameie'}${h.sted ? ', ' + esc(h.sted) : ''}</span></span><span class="mono muted">${h.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</span></button></li>`).join('')}</ul>` : ''}
+    ${S.hits.length ? `<ul class="hits">${S.hits.map(h => `<li><button data-pick="${h.orgnr}"><span><b>${esc(h.navn)}</b> <span class="muted">${FORMKORT[h.form] || esc(h.form)}${h.sted ? ', ' + esc(h.sted) : ''}</span></span><span class="mono muted">${h.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</span></button></li>`).join('')}</ul>` : ''}
   </section>`;
+  if (o && !o.confirmed) {
+    html += `<section class="card" style="border-color:var(--warn)">
+      <div class="card-head"><div><h2 class="h2">Er ${esc(o.navn)} et ${o.form === 'AS' ? 'boligaksjeselskap' : 'boligsameie'}?</h2><p class="sub">Det er registrert som ${o.form === 'AS' ? 'aksjeselskap' : 'tingsrettslig sameie'}, men uten næringskoden for boligselskaper. Se kjennetegnene under og bekreft.</p></div></div>
+      <div class="req-actions"><button class="btn primary" data-act="confirm">${ICON.check}Ja, det er ${o.form === 'AS' ? 'et boligaksjeselskap' : 'et boligsameie'}</button><button class="btn" data-act="reject">Nei</button></div>
+    </section>`;
+  }
   if (o) {
+    const sig = signals(o);
     html += `<div class="grid-2e">
       <section class="card">
-        <div class="card-head"><div><div class="eyebrow">${o.formNavn}</div><h2 class="h2" style="font-size:22px;margin-top:2px">${esc(o.navn)}</h2></div>${o.example ? '<span class="pill">Eksempel</span>' : '<span class="pill good">' + ICON.check + 'Funnet</span>'}</div>
+        <div class="card-head"><div><div class="eyebrow">${o.confirmed ? o.formNavn : o.form === 'AS' ? 'Aksjeselskap' : 'Tingsrettslig sameie'}</div><h2 class="h2" style="font-size:22px;margin-top:2px">${esc(o.navn)}</h2></div>${o.example ? '<span class="pill">Eksempel</span>' : '<span class="pill good">' + ICON.check + 'Funnet</span>'}</div>
         <dl class="kv">
           <dt>Org.nr.</dt><dd class="mono">${o.orgnr.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3')}</dd>
           <dt>Adresse</dt><dd>${esc(o.adresse || 'Ikke registrert')}</dd>
@@ -694,6 +744,7 @@ function v1() {
           <dt>Regnskapsfører</dt><dd>${esc(o.regn || 'Ingen registrert')}</dd>
           <dt>Revisor</dt><dd>${esc(o.revisor || 'Ingen registrert')}</dd>
         </dl>
+        ${sig.length ? `<div class="dsec" style="margin-top:14px"><h3 class="h3">Kjennetegn på ${o.form === 'AS' ? 'et boligaksjeselskap' : 'et boligsameie'}</h3><div class="plikter">${sig.map(([t, ok, s]) => `<div class="plikt"><span class="plikt-t">${t}</span>${ok ? `<span class="pill good">${ICON.check}Ja</span>` : '<span class="pill">Nei</span>'}<span class="plikt-s">${esc(s)}</span></div>`).join('')}</div></div>` : ''}
         <div class="dsec" style="margin-top:14px"><h3 class="h3">Styret</h3>${o.styret.length ? `<ul class="board-mini">${o.styret.map(([n, r]) => `<li><span>${esc(n)}</span><span class="muted">${esc(r)}</span></li>`).join('')}</ul>` : '<p class="sub">Ingen styremedlemmer registrert.</p>'}</div>
         <p class="src-line" style="margin-top:12px">${ICON.check}${o.example ? 'Oppdiktet eksempel. Med et ekte organisasjonsnummer hentes dette fra Brønnøysund.' : 'Hentet fra Enhetsregisteret og Foretaksregisteret kl. ' + o.hentet.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' }) + '.'}</p>
         ${o.ffor ? `<p class="fine" style="margin-top:8px">${esc(o.navn)} har forretningsfører. Tun kan brukes som styrets arkiv og årshjul ved siden av den.</p>` : ''}
@@ -702,16 +753,16 @@ function v1() {
         <section class="card">
           <div class="card-head"><div><h2 class="h2">Størrelse</h2><p class="sub">Brønnøysund vet ikke hvor mange boliger dere har. ${o.form === 'ESEK' ? 'For sameier styrer antallet hvilke plikter som gjelder.' : ''}</p></div></div>
           <div class="counts">
-            <label for="nSeks">${o.form === 'BRL' ? 'Antall andeler' : 'Antall seksjoner'}<input id="nSeks" type="number" min="1" max="2000" inputmode="numeric" value="${S.counts.seksjoner ?? ''}"></label>
+            <label for="nSeks">${STRL[o.form]}<input id="nSeks" type="number" min="1" max="2000" inputmode="numeric" value="${S.counts.seksjoner ?? ''}"></label>
             ${o.form === 'ESEK' ? `<label for="nBolig">Herav boliger<input id="nBolig" type="number" min="0" max="2000" inputmode="numeric" value="${S.counts.bolig ?? ''}"></label>` : ''}
           </div>
           ${o.form === 'ESEK' && o.sisteRegnskap && S.counts.seksjoner == null ? `<p class="fine" style="margin-top:10px">Sameiet leverer årsregnskap, så det har trolig 21 seksjoner eller flere.</p>` : ''}
         </section>
-        <div id="pliktSlot">${pliktCard()}</div>
+        <div id="pliktSlot">${o.confirmed ? pliktCard() : ''}</div>
       </div>
     </div>`;
   }
-  html += `<div class="nav-row"><span></span><button class="btn primary" data-act="next" ${o ? '' : 'disabled'}>Neste: beboerne</button></div>`;
+  html += `<div class="nav-row"><span></span><button class="btn primary" data-act="next" ${o && o.confirmed ? '' : 'disabled'}>Neste: beboerne</button></div>`;
   return html;
 }
 function v2() {
@@ -781,7 +832,7 @@ function v4() {
   const min = Math.max(1, Math.round((Date.now() - T0) / 60000));
   const sjekkDocs = D ? D.filter(d => d.cat === 'sjekk').length : 0;
   const sjekkRows = R ? R.rows.filter(r => r.flags.some(f => f[1] !== 'info')).length : 0;
-  const demo = o.form === 'ESEK' ? 'tun-demo-sameie.html' : 'tun-demo.html';
+  const demo = o.form === 'ESEK' || o.form === 'SAM' ? 'tun-demo-sameie.html' : 'tun-demo.html';
   return `
   <section class="card">
     <div class="card-head"><div><div class="eyebrow">Ferdig</div><h2 class="h2" style="font-size:24px;margin-top:2px">${esc(o.navn)} er klar til bruk</h2><p class="sub">Du brukte ${min} ${min === 1 ? 'minutt' : 'minutter'}. Resten av arkivet kan legges inn når som helst.</p></div></div>
@@ -803,7 +854,7 @@ function v4() {
     </ul>
   </section>
   <div class="nav-row"><button class="btn" data-act="back">Tilbake</button><a class="btn primary" href="${demo}" style="text-decoration:none">Se hvordan det ser ut i demoen</a></div>
-  ${o.example ? '' : `<p class="fine">Demoen viser et oppdiktet ${o.form === 'ESEK' ? 'sameie' : 'borettslag'}. I produktet ville det vært ${esc(o.navn)} med tallene dere la inn her.</p>`}`;
+  ${o.example ? '' : `<p class="fine">Demoen viser et oppdiktet ${o.form === 'ESEK' || o.form === 'SAM' ? 'sameie' : 'borettslag'}. I produktet ville det vært ${esc(o.navn)} med tallene og pliktene for et ${FORMKORT[o.form]}.</p>`}`;
 }
 
 function render() {
@@ -830,6 +881,8 @@ document.addEventListener('click', e => {
   if (b.dataset.toast) return toast(b.dataset.toast);
   const a = b.dataset.act;
   if (a === 'example') useExample();
+  else if (a === 'confirm') { S.org.confirmed = true; render(); }
+  else if (a === 'reject') { const n = S.org.navn; S.org = null; S.err = `Da hopper vi over ${n}. Tun er laget for borettslag, sameier og boligaksjeselskaper.`; render(); }
   else if (a === 'next') go(S.step + 1);
   else if (a === 'back') go(S.step - 1);
   else if (a === 'exrows') setRows(exampleRows(), 'Eksempel: beboerliste.xlsx');
@@ -841,7 +894,7 @@ document.addEventListener('input', e => {
   if (e.target.id === 'nSeks' || e.target.id === 'nBolig') {
     const v = e.target.value === '' ? null : Math.max(0, Math.round(+e.target.value));
     if (e.target.id === 'nSeks') S.counts.seksjoner = v; else S.counts.bolig = v;
-    $('pliktSlot').innerHTML = pliktCard();
+    if (S.org?.confirmed) $('pliktSlot').innerHTML = pliktCard();
   }
 });
 document.addEventListener('change', e => {
